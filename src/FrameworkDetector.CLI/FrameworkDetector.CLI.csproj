@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <StartupObject>FrameworkDetector.CLI.Program</StartupObject>
+    <AssemblyName>FrameworkDetector.CLI</AssemblyName>
+    <RootNamespace>FrameworkDetector.CLI</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FrameworkDetector\FrameworkDetector.csproj" />
+  </ItemGroup>
+
+</Project>

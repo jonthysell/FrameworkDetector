@@ -1,0 +1,10 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Custom for Visual Studio
+*.cs     diff=csharp
+
+# Other Files
+*.md  text eol=crlf
+*.yml text eol=lf
+*.json text eol=lf
