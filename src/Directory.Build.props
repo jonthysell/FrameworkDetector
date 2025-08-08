@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <Product>FrameworkDetector</Product>
-    <Company>Microsoft Corporation</Company>
-    <Authors>MicrosoftCorporation</Authors>
+    <Company>Microsoft</Company>
+    <Authors>Microsoft</Authors>
     <Copyright>Copyright © Microsoft Corporation</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <RepositoryUrl>https://github.com/jonthysell/FrameworkDetector</RepositoryUrl>
