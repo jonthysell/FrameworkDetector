@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameworkDetector", "FrameworkDetector\FrameworkDetector.csproj", "{1807E197-0820-3B54-B4FF-EDC95E716435}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameworkDetector.CLI", "FrameworkDetector.CLI\FrameworkDetector.CLI.csproj", "{A31AD411-11CD-5CCB-C0DF-32ADCA922327}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameworkDetector", "FrameworkDetector\FrameworkDetector.csproj", "{1807E197-0820-3B54-B4FF-EDC95E716435}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameworkDetector.Test", "FrameworkDetector.Test\FrameworkDetector.Test.csproj", "{D331C0E5-720B-D84E-A5EF-AB320C4D0BED}"
 EndProject
@@ -21,14 +21,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1807E197-0820-3B54-B4FF-EDC95E716435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1807E197-0820-3B54-B4FF-EDC95E716435}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1807E197-0820-3B54-B4FF-EDC95E716435}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1807E197-0820-3B54-B4FF-EDC95E716435}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A31AD411-11CD-5CCB-C0DF-32ADCA922327}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A31AD411-11CD-5CCB-C0DF-32ADCA922327}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A31AD411-11CD-5CCB-C0DF-32ADCA922327}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A31AD411-11CD-5CCB-C0DF-32ADCA922327}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1807E197-0820-3B54-B4FF-EDC95E716435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1807E197-0820-3B54-B4FF-EDC95E716435}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1807E197-0820-3B54-B4FF-EDC95E716435}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1807E197-0820-3B54-B4FF-EDC95E716435}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D331C0E5-720B-D84E-A5EF-AB320C4D0BED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D331C0E5-720B-D84E-A5EF-AB320C4D0BED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D331C0E5-720B-D84E-A5EF-AB320C4D0BED}.Release|Any CPU.ActiveCfg = Release|Any CPU
