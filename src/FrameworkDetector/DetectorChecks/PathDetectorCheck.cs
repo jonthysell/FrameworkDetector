@@ -38,6 +38,8 @@ public abstract class PathDetectorCheck : IDetectorCheck
             throw new ArgumentNullException(nameof(Path));
         }
 
+        await Task.Yield();
+
         return DetectorCheckStatus.None;
     }
 }

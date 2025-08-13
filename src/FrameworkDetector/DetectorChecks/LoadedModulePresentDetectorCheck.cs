@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,15 +12,17 @@ namespace FrameworkDetector.DetectorChecks;
 
 public class LoadedModulePresentDetectorCheck : ProcessDetectorCheck
 {
-    public override string Name => $"{nameof(LoadedModulePresentDetectorCheck)}({ModuleName})";
+    public override string Name => nameof(LoadedModulePresentDetectorCheck);
 
-    public override string Description => $"Detect \"{ModuleName}\" in Process.LoadedModules";
+    public override string Description => $"Detect moduleName in Process.LoadedModules";
 
     public readonly string ModuleName;
 
     public LoadedModulePresentDetectorCheck(string moduleName, bool isRequired = true) : base(isRequired)
     {
         ModuleName = moduleName;
+        Result.ExtraData = new JsonObject();
+        Result.ExtraData["moduleName"] = ModuleName;
     }
 
     protected override async Task<DetectorCheckStatus> RunCheckAsync(CancellationToken cancellationToken)

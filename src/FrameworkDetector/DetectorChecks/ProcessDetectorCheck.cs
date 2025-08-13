@@ -40,6 +40,8 @@ public abstract class ProcessDetectorCheck : IDetectorCheck
             throw new ArgumentNullException(nameof(Process));
         }
 
+        await Task.Yield();
+
         return DetectorCheckStatus.None;
     }
 }
