@@ -71,14 +71,14 @@ internal static class Program
         var result = new JsonObject();
         result["toolName"] = AssemblyInfo.ToolName;
         result["toolVersion"] = AssemblyInfo.ToolVersion;
-
+        result["timestamp"] = DateTime.UtcNow.ToString("O");
         result["target"] = metadata.AsJson();
 
         if (task.IsCompletedSuccessfully)
         {
-            result["target"]!["detectors"] = new JsonArray()
+            result["target"]!["frameworks"] = new JsonArray()
             {
-                task.Result.AsJson(),
+                wpfDetector.Result.AsJson()
             };
         }
 

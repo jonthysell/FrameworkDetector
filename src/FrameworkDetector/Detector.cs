@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.DetectorChecks;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace FrameworkDetector;
 
-public abstract class Detector
+public abstract class Detector : IDetector, IDetectorByProcess, IDetectorByPath
 {
     public abstract string Name { get; }
 
@@ -20,68 +21,101 @@ public abstract class Detector
 
     public abstract string FrameworkId { get; }
 
-    public IReadOnlyList<string> ModuleNames => _moduleNames;
-    protected readonly List<string> _moduleNames = new List<string>();
+    public DetectorResult Result { get; protected set; }
 
-    public virtual async Task<DetectorResult> DetectByProcessAsync(Process process, CancellationToken cancellationToken)
+    public IReadOnlyList<ProcessDetectorCheck> ProcessChecks => _processChecks;
+    protected readonly List<ProcessDetectorCheck> _processChecks = new List<ProcessDetectorCheck>();
+
+    public IReadOnlyList<PathDetectorCheck> PathChecks => _pathChecks;
+    protected readonly List<PathDetectorCheck> _pathChecks = new List<PathDetectorCheck>();
+
+    protected Detector()
     {
-        var result = new DetectorResult()
+        Result = new DetectorResult()
         {
             DetectorName = Name,
             DetectorVersion = AssemblyInfo.LibraryVersion,
             FrameworkId = FrameworkId,
         };
+    }
+
+    public virtual async Task<DetectorStatus> DetectByProcessAsync(Process process, CancellationToken cancellationToken)
+    {
+        Result.Status = DetectorStatus.InProgress;
 
         if (!cancellationToken.IsCancellationRequested)
         {
-            var moduleDetectionResults = new ConcurrentDictionary<string, bool>();
-
-            await Parallel.ForEachAsync(ModuleNames, async (moduleName, token) =>
+            await Parallel.ForEachAsync(ProcessChecks, cancellationToken, async (check, token) =>
             {
-                bool moduleDetected = false;
-
-                foreach (var processModule in process.Modules.Cast<ProcessModule>())
-                {
-                    await Task.Yield();
-
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    if (processModule.ModuleName.Equals(moduleName, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        moduleDetected = true;
-                        break;
-                    }
-                }
-
-                moduleDetectionResults[moduleName] = moduleDetected;
+                await check.RunCheckAsync(process, token);
             });
+        }
 
-            if (moduleDetectionResults.Count == ModuleNames.Count)
-            {
-                // Every target module was detected (or not) without early cancelation
-                result.FrameworkFound = moduleDetectionResults.All(kvp => kvp.Value);
-                result.Status = DetectorResultStatus.Completed;
-            }
+        UpdateResult(ProcessChecks, cancellationToken.IsCancellationRequested);
 
-            if (moduleDetectionResults.Count > 0)
+        return Result.Status;
+    }
+
+    public virtual async Task<DetectorStatus> DetectByPathAsync(string path, CancellationToken cancellationToken)
+    {
+        Result.Status = DetectorStatus.InProgress;
+
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            await Parallel.ForEachAsync(PathChecks, cancellationToken, async (check, token) =>
             {
-                // There's at least some data
-                result.Data = new JsonObject();
-                foreach (var kvp in moduleDetectionResults)
+                await check.RunCheckAsync(path, token);
+            });
+        }
+
+        UpdateResult(PathChecks, cancellationToken.IsCancellationRequested);
+
+        return Result.Status;
+    }
+
+    protected void UpdateResult(IReadOnlyList<IDetectorCheck> checks, bool wasCanceled)
+    {
+        var requiredCheckCount = 0;
+        var requiredCheckSuccesses = 0;
+        var completedCount = 0;
+
+        foreach (var check in checks)
+        {
+            if (check.IsRequired)
+            {
+                requiredCheckCount++;
+                if (check.Result.Status == DetectorCheckStatus.CompletedPassed)
                 {
-                    result.Data[kvp.Key] = kvp.Value;
+                    requiredCheckSuccesses++;
+                }
+
+                if (check.Result is not null)
+                {
+                    Result.CheckResults.Add(check.Result);
                 }
             }
+
+            if (check.Result.Status == DetectorCheckStatus.CompletedPassed || check.Result.Status == DetectorCheckStatus.CompletedFailed)
+            {
+                completedCount++;
+            }
         }
 
-        if (cancellationToken.IsCancellationRequested && result.Status != DetectorResultStatus.Completed)
+        if (requiredCheckCount == 0)
         {
-            result.Status = DetectorResultStatus.Canceled;
+            throw new ArgumentException($"Detector \"{Name}\" does not have any required checks!");
         }
 
-        return result;
+        if (completedCount == checks.Count)
+        {
+            Result.Status = DetectorStatus.Completed;
+        }
+
+        Result.FrameworkFound = requiredCheckSuccesses == requiredCheckCount;
+
+        if (wasCanceled && Result.Status != DetectorStatus.Completed)
+        {
+            Result.Status = DetectorStatus.Canceled;
+        }
     }
 }

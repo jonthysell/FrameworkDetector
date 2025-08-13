@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.DetectorChecks;
+
 namespace FrameworkDetector.Detectors;
 
 public class WpfDetector : Detector 
@@ -13,7 +15,7 @@ public class WpfDetector : Detector
 
     public WpfDetector()
     {
-        _moduleNames.Add("PresentationFramework.dll");
-        _moduleNames.Add("PresentationCore.dll");
+        _processChecks.Add(new LoadedModulePresentDetectorCheck("PresentationFramework.dll", true));
+        _processChecks.Add(new LoadedModulePresentDetectorCheck("PresentationCore.dll", true));
     }
 }

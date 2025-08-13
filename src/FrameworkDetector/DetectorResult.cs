@@ -1,9 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 
 namespace FrameworkDetector;
+
+public enum DetectorStatus
+{
+    None,
+    InProgress,
+    Canceled,
+    Completed,
+}
 
 public class DetectorResult
 {
@@ -15,9 +24,9 @@ public class DetectorResult
 
     public bool FrameworkFound = false;
 
-    public DetectorResultStatus Status = DetectorResultStatus.None;
+    public DetectorStatus Status = DetectorStatus.None;
 
-    public JsonObject? Data;
+    public readonly List<DetectorCheckResult> CheckResults = new List<DetectorCheckResult>();
 
     public JsonObject AsJson()
     {
@@ -26,11 +35,16 @@ public class DetectorResult
         result["detectorVersion"] = DetectorVersion;
         result["frameworkId"] = FrameworkId;
         result["frameworkFound"] = FrameworkFound;
-        result["status"] = Status.ToString().ToLowerInvariant();
-        if (Data is not null)
+        result["status"] = char.ToLower(Status.ToString()[0]) + Status.ToString()[1..];
+
+        var checkResults = new JsonArray();
+        foreach (var checkResult in CheckResults)
         {
-            result["data"] = Data;
+            checkResults.Add(checkResult.AsJson());
         }
+
+        result["checkResults"] = checkResults;
+
         return result;
     }
 
@@ -38,11 +52,4 @@ public class DetectorResult
     {
         return AsJson().ToJsonString(new System.Text.Json.JsonSerializerOptions() { WriteIndented = true });
     }
-}
-
-public enum DetectorResultStatus
-{
-    None,
-    Canceled,
-    Completed,
 }
