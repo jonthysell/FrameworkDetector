@@ -84,7 +84,7 @@ public abstract class Detector : IDetector, IDetectorByProcess, IDetectorByPath
             if (check.IsRequired)
             {
                 requiredCheckCount++;
-                if (check.Result.Status == DetectorCheckStatus.CompletedPassed)
+                if (check.Result!.Status == DetectorCheckStatus.CompletedPassed)
                 {
                     requiredCheckSuccesses++;
                 }
@@ -95,7 +95,7 @@ public abstract class Detector : IDetector, IDetectorByProcess, IDetectorByPath
                 }
             }
 
-            if (check.Result.Status == DetectorCheckStatus.CompletedPassed || check.Result.Status == DetectorCheckStatus.CompletedFailed)
+            if (check.Result!.Status is DetectorCheckStatus.CompletedPassed or DetectorCheckStatus.CompletedFailed)
             {
                 completedCount++;
             }
