@@ -46,7 +46,7 @@ If there are multiple different expected ways to consume FrameworkName (i.e. tha
 
 -->
 
-## How to Detect FrameworkName
+## How to Detect
 
 <!--
 
