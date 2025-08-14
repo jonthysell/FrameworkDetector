@@ -16,33 +16,14 @@ public enum DetectorCheckStatus
 
 public class DetectorCheckResult
 {
-    public readonly IDetectorCheck DetectorCheck;
+    public IDetectorCheck Detector;
 
-    public DetectorCheckStatus Status = DetectorCheckStatus.None;
+    public DetectorCheckStatus Status { get; set; } = DetectorCheckStatus.None;
 
-    public JsonObject? ExtraData = null;
+    public JsonObject? ExtraData { get; set; } = null;
 
     public DetectorCheckResult(IDetectorCheck detectorCheck)
     {
-        DetectorCheck = detectorCheck;
-    }
-
-    public JsonObject AsJson()
-    {
-        var result = new JsonObject();
-        result["name"] = DetectorCheck.Name;
-        result["description"] = DetectorCheck.Description;
-        result["isRequired"] = DetectorCheck.IsRequired;
-        result["status"] = char.ToLower(Status.ToString()[0]) + Status.ToString()[1..];
-        if (ExtraData is not null)
-        {
-            result["extraData"] = ExtraData;
-        }
-        return result;
-    }
-
-    public override string ToString()
-    {
-        return AsJson().ToJsonString(new System.Text.Json.JsonSerializerOptions() { WriteIndented = true });
+        Detector = detectorCheck;
     }
 }

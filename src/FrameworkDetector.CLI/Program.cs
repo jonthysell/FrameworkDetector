@@ -68,21 +68,13 @@ internal static class Program
         var task = wpfDetector.DetectByProcessAsync(process, cts.Token);
         task.Wait();
 
-        var result = new JsonObject();
-        result["toolName"] = AssemblyInfo.ToolName;
-        result["toolVersion"] = AssemblyInfo.ToolVersion;
-        result["timestamp"] = DateTime.UtcNow.ToString("O");
-        result["target"] = metadata.AsJson();
-
-        if (task.IsCompletedSuccessfully)
+        var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion)
         {
-            result["target"]!["frameworks"] = new JsonArray()
-            {
-                wpfDetector.Result.AsJson()
-            };
-        }
+            ProcessMetadata = metadata, 
+            Frameworks = task.IsCompletedSuccessfully ? [wpfDetector.Result] : []
+        };
 
-        Console.WriteLine(result.ToJsonString(new JsonSerializerOptions() { WriteIndented = true }));
+        Console.WriteLine(result.ToString());
     }
 
     private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
