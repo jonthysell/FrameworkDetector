@@ -32,7 +32,7 @@ Provide the OS families that FrameworkName supports (Windows, Linux, macOS, iOS,
 
 <!--
 
-List any frameworks that FrameworkName itself requires (whether its detection is supported by FrameworkDetector or not).
+List (and link) any frameworks that FrameworkName itself requires (whether its detection is supported by FrameworkDetector or not).
 
 -->
 
@@ -40,7 +40,7 @@ List any frameworks that FrameworkName itself requires (whether its detection is
 
 <!--
 
-List at least one example retail app that uses FrameworkName in the expected manner, as a "canonical" app. Preferably one that is free to download an run.
+List (and link) at least one example retail app that uses FrameworkName in the expected manner, as a "canonical" app. Preferably one that is free to download an run.
 
 If there are multiple different expected ways to consume FrameworkName (i.e. that may require different methods to detect FrameworkName), include those as well.
 
