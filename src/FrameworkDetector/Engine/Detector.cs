@@ -1,25 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.DataSources;
 using FrameworkDetector.DetectorChecks;
+using FrameworkDetector.Models;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FrameworkDetector;
+namespace FrameworkDetector.Engine;
 
-public abstract class Detector : IDetector, IDetectorByProcess, IDetectorByPath
+public class Detector : IConfigDetectorRequirements
 {
-    public abstract string Name { get; }
-
-    public abstract string Description { get; }
-
-    public abstract string FrameworkId { get; }
+    // TODO: Maybe this is just passed through via putting the interface directly on the detector...
+    public IDetector Info { get; init; }
 
     public DetectorResult Result { get; protected set; }
 
@@ -29,14 +25,21 @@ public abstract class Detector : IDetector, IDetectorByProcess, IDetectorByPath
     public IReadOnlyList<PathDetectorCheck> PathChecks => _pathChecks;
     protected readonly List<PathDetectorCheck> _pathChecks = new List<PathDetectorCheck>();
 
-    protected Detector()
+    protected Detector(IDetector detectorInfo)
     {
+        Info = detectorInfo ?? throw new ArgumentNullException(nameof(detectorInfo));
+
         Result = new DetectorResult()
         {
-            DetectorName = Name,
+            DetectorName = Info.Name,
             DetectorVersion = AssemblyInfo.LibraryVersion,
-            FrameworkId = FrameworkId,
+            FrameworkId = Info.FrameworkId,
         };
+    }
+
+    public static IConfigDetectorRequirements Create(IDetector detectorInfo)
+    {
+        return new Detector(detectorInfo);
     }
 
     public virtual async Task<DetectorStatus> DetectByProcessAsync(Process process, CancellationToken cancellationToken)
@@ -103,7 +106,7 @@ public abstract class Detector : IDetector, IDetectorByProcess, IDetectorByPath
 
         if (requiredCheckCount == 0)
         {
-            throw new ArgumentException($"Detector \"{Name}\" does not have any required checks!");
+            throw new ArgumentException($"Detector \"{Info.Name}\" does not have any required checks!");
         }
 
         if (completedCount == checks.Count)
@@ -117,5 +120,20 @@ public abstract class Detector : IDetector, IDetectorByProcess, IDetectorByPath
         {
             Result.Status = DetectorStatus.Canceled;
         }
+    }
+
+    public IConfigDetectorRequirements Required(Func<DetectorCheckList, DetectorCheckList> checks)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IConfigDetectorRequirements Optional(string subtitle, Func<DetectorCheckList, DetectorCheckList> checks)
+    {
+        throw new NotImplementedException();
+    }
+
+    public DetectorDefinition BuildDefinition()
+    {
+        throw new NotImplementedException();
     }
 }

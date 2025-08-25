@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace FrameworkDetector;
+namespace FrameworkDetector.Models;
 
 internal class DetectorJsonSerializerOptions
 {

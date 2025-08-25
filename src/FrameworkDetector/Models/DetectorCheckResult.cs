@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Engine;
 using System.Text.Json.Nodes;
 
-namespace FrameworkDetector;
+namespace FrameworkDetector.Models;
 
 public enum DetectorCheckStatus
 {

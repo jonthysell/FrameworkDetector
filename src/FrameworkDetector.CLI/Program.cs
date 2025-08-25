@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Detectors;
+using FrameworkDetector.Engine;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 
 namespace FrameworkDetector.CLI;
@@ -80,5 +81,18 @@ internal static class Program
     private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         Console.Error.WriteLine($"Unhandled exception: {e.ExceptionObject}");
+    }
+
+    internal static IServiceProvider ConfigureServices()
+    {
+        ServiceCollection services = new();
+
+        // Add Detectors here.
+        services.AddSingleton<IDetector, WpfDetector>();
+        services.AddSingleton<IDetector, UWPXAMLDetector>();
+
+        services.AddSingleton<DetectionEngine>();
+
+        return services.BuildServiceProvider();
     }
 }

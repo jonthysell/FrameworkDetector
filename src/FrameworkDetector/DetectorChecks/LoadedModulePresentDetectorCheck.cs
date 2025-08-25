@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Models;
 using System;
 using System.Diagnostics;
 using System.Linq;

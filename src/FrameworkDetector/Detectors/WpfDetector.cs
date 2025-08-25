@@ -2,20 +2,34 @@
 // Licensed under the MIT License.
 
 using FrameworkDetector.DetectorChecks;
+using FrameworkDetector.Engine;
+using FrameworkDetector.Models;
+using System;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FrameworkDetector.Detectors;
 
-public class WpfDetector : Detector 
+public class WpfDetector : IDetector 
 {
-    public override string Name => nameof(WpfDetector);
+    public string Name => nameof(WpfDetector);
 
-    public override string Description => "Windows Presentation Framework";
+    public string Description => "Windows Presentation Framework";
 
-    public override string FrameworkId => "WPF";
+    public string FrameworkId => "WPF";
 
     public WpfDetector()
     {
-        _processChecks.Add(new LoadedModulePresentDetectorCheck("PresentationFramework.dll", true));
-        _processChecks.Add(new LoadedModulePresentDetectorCheck("PresentationCore.dll", true));
+    }
+    
+    public DetectorDefinition CreateDefinition()
+    {
+        // WPF
+        return Detector.Create(this)
+            .Required(checks => checks
+                .ContainsModule("PresentationFramework.dll")
+                .ContainsModule("PresentationCore.dll"))
+            .BuildDefinition();
     }
 }

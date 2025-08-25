@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Engine;
+using FrameworkDetector.Models;
 using System;
 using System.Diagnostics;
 using System.Text.Json.Nodes;

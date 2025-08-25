@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace FrameworkDetector;
+namespace FrameworkDetector.Models;
 
 public record WindowsBinaryMetadata(string Filename, 
                                     string? OriginalFilename, 

@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Models;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FrameworkDetector;
+namespace FrameworkDetector.Engine;
 
 public interface IDetector
 {
@@ -15,7 +16,7 @@ public interface IDetector
 
     string FrameworkId { get; }
 
-    DetectorResult Result { get; }
+    DetectorDefinition CreateDefinition();
 }
 
 public interface IDetectorByProcess : IDetector

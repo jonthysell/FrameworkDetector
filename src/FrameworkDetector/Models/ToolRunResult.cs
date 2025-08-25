@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace FrameworkDetector.CLI;
+namespace FrameworkDetector.Models;
 
-public class ToolRunResult
+public record ToolRunResult
 {
     public string ToolName { get; }
 

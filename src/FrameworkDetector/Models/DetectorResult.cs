@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace FrameworkDetector;
+namespace FrameworkDetector.Models;
 
 public enum DetectorStatus
 {
