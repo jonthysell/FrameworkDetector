@@ -19,12 +19,6 @@ public class Detector : IConfigDetectorRequirements
 
     public DetectorResult Result { get; protected set; }
 
-    public IReadOnlyList<ProcessDetectorCheck> ProcessChecks => _processChecks;
-    protected readonly List<ProcessDetectorCheck> _processChecks = new List<ProcessDetectorCheck>();
-
-    public IReadOnlyList<PathDetectorCheck> PathChecks => _pathChecks;
-    protected readonly List<PathDetectorCheck> _pathChecks = new List<PathDetectorCheck>();
-
     internal Detector(IDetector detectorInfo)
     {
         Info = detectorInfo ?? throw new ArgumentNullException(nameof(detectorInfo));
@@ -41,7 +35,7 @@ public class Detector : IConfigDetectorRequirements
     {
         Result.Status = DetectorStatus.InProgress;
 
-        if (!cancellationToken.IsCancellationRequested)
+        /*if (!cancellationToken.IsCancellationRequested)
         {
             await Parallel.ForEachAsync(ProcessChecks, cancellationToken, async (check, token) =>
             {
@@ -49,7 +43,7 @@ public class Detector : IConfigDetectorRequirements
             });
         }
 
-        UpdateResult(ProcessChecks, cancellationToken.IsCancellationRequested);
+        UpdateResult(ProcessChecks, cancellationToken.IsCancellationRequested);*/
 
         return Result.Status;
     }
@@ -58,7 +52,7 @@ public class Detector : IConfigDetectorRequirements
     {
         Result.Status = DetectorStatus.InProgress;
 
-        if (!cancellationToken.IsCancellationRequested)
+        /*if (!cancellationToken.IsCancellationRequested)
         {
             await Parallel.ForEachAsync(PathChecks, cancellationToken, async (check, token) =>
             {
@@ -66,7 +60,7 @@ public class Detector : IConfigDetectorRequirements
             });
         }
 
-        UpdateResult(PathChecks, cancellationToken.IsCancellationRequested);
+        UpdateResult(PathChecks, cancellationToken.IsCancellationRequested);*/
 
         return Result.Status;
     }

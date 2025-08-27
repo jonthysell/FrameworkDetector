@@ -12,6 +12,8 @@ public interface IDataSource
     static virtual Guid Id { get; } = Guid.Empty;
 
     //// TODO: If we use source generators for this setup/registry then this probably gets simpler.
+    //// In the SG case, we probably need a parent class which represents the data source type, then we could
+    //// create a keyed index within the services bucket at compile/load time in an AOT way. Then the specific instance of the data source is registered to that bucket. Since we have the DataSourceCollection type now, that'd probably expand in some ways to represent that role or split apart, as the look-up would be done through DI, so the inner value list of datasource would be the bit encapsulated??
     /// <summary>
     /// Gets the static Id of the type of data source this is.
     /// </summary>

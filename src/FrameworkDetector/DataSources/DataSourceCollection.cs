@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace FrameworkDetector.DataSources;
 
+/// <summary>
+/// A grouped collection of <see cref="IDataSource"/> by <see cref="IDataSource.Id"/>, used for live lookup of datasources added after initialization.
+/// </summary>
 public class DataSourceCollection : ReadOnlyDictionary<Guid, IDataSource[]>, IReadOnlyCollection<IDataSource[]>
 {
     // Take in a collection of data sources and group by common id (e.g. if an app has multiple processes)
@@ -17,7 +20,7 @@ public class DataSourceCollection : ReadOnlyDictionary<Guid, IDataSource[]>, IRe
     }
 
     /// <summary>
-    /// Trys to retrieve all data sources of the requested type. Provides them as the specified type.
+    /// Tries to retrieve all data sources of the requested type. Provides them as the specified type.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="key"></param>
