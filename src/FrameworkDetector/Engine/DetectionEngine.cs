@@ -25,16 +25,19 @@ public class DetectionEngine
         }
     }
 
-    // TODO: Have a progress type with more detailed information.
     public async Task<ToolRunResult> DetectAgainstSourcesWithProgressAsync(DataSourceCollection sources, IProgress<int> progress, CancellationToken cancellationToken)
     {
         var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion, sources);
 
+        // TODO: Do we want to have this be 1-step of progress?
         // Step 1. Initialize all the data sources.
         await Parallel.ForEachAsync(sources.Values.SelectMany(inner => inner), cancellationToken, async static (source, ct) =>
         {
             await source.LoadAndCacheDataAsync(ct);
         });
+
+        int totalDetectors = _detectors.Count;
+        int processedDetectors = 0;
 
         // Step 2. Run all the detectors against the data sources.
         await Parallel.ForEachAsync(_detectors, cancellationToken, async (detector, cancellationToken) =>
@@ -71,6 +74,10 @@ public class DetectionEngine
                     var innerResult = await optionalCheck.PerformCheckAsync(detector.Info, sources, cancellationToken);
                 }
             }
+
+            // Update progress after each detector finishes
+            Interlocked.Increment(ref processedDetectors);
+            progress.Report((processedDetectors * 100) / totalDetectors);
         });
 
         // TODO: Step 3. Aggregate/Finalize all the results?
