@@ -3,7 +3,6 @@
 
 using FrameworkDetector.Checks;
 using FrameworkDetector.Engine;
-using System.Text.Json.Nodes;
 
 namespace FrameworkDetector.Models;
 
@@ -14,18 +13,24 @@ public enum DetectorCheckStatus
     Canceled,
     CompletedPassed,
     CompletedFailed,
+    Error,
 }
 
-public class DetectorCheckResult
+public interface IDetectorCheckResult
 {
-    public ICheckDefinition Detector;
+    public IDetector Detector { get; }
 
+    public ICheckDefinition Check { get; }
+
+    public DetectorCheckStatus Status { get; set; }
+}
+
+public record DetectorCheckResult<T>(
+    IDetector Detector,
+    ICheckDefinition Check
+) : IDetectorCheckResult where T : struct
+{
     public DetectorCheckStatus Status { get; set; } = DetectorCheckStatus.None;
 
-    public JsonObject? ExtraData { get; set; } = null;
-
-    public DetectorCheckResult(ICheckDefinition detectorCheck)
-    {
-        Detector = detectorCheck;
-    }
+    public T? ExtraMetadata { get; set; }
 }

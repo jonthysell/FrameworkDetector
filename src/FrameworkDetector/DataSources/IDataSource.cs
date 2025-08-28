@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FrameworkDetector.DataSources;
@@ -24,5 +25,5 @@ public interface IDataSource
     /// Called during initialization for the data source to snapshot data about an application and cache for use by all detectors.
     /// </summary>
     /// <returns></returns>
-    Task<bool> LoadAndCacheDataAsync();
+    Task<bool> LoadAndCacheDataAsync(CancellationToken cancellationToken);
 }

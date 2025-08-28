@@ -30,26 +30,14 @@ public class DetectionEngine
     {
         var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion, sources);
 
-        ParallelOptions options = new()
-        {
-            CancellationToken = cancellationToken,
-            MaxDegreeOfParallelism = Environment.ProcessorCount,
-        };
-
         // Step 1. Initialize all the data sources.
-        var loopResult = Parallel.ForEach(sources.Values.SelectMany(inner => inner), options, async source =>
+        await Parallel.ForEachAsync(sources.Values.SelectMany(inner => inner), cancellationToken, async static (source, ct) =>
         {
-            await source.LoadAndCacheDataAsync();
+            await source.LoadAndCacheDataAsync(ct);
         });
 
-        if (!loopResult.IsCompleted)
-        {
-            // TODO: We should define how we want to handle, log, and report exceptions at various points.
-            throw new InvalidOperationException("Data Sources Couldn't be initialized.");
-        }
-
         // Step 2. Run all the detectors against the data sources.
-        Parallel.ForEach(_detectors, options, async detector =>
+        await Parallel.ForEachAsync(_detectors, cancellationToken, async (detector, cancellationToken) =>
         {
             // TODO: Probably parallelizing on the detectors is enough vs. each check
 
@@ -64,7 +52,7 @@ public class DetectionEngine
                     break;
                 }
 
-                var innerResult = await requiredCheck.PerformCheckAsync(sources, cancellationToken);
+                var innerResult = await requiredCheck.PerformCheckAsync(detector.Info, sources, cancellationToken);
             }
 
             // Optional checks won't fail the detection of the framework and are used to provide stronger confidence or additional metadata about the framework.
@@ -80,7 +68,7 @@ public class DetectionEngine
 
                 foreach (var optionalCheck in optionalCheckBlock.Value)
                 {
-                    var innerResult = await optionalCheck.PerformCheckAsync(sources, cancellationToken);
+                    var innerResult = await optionalCheck.PerformCheckAsync(detector.Info, sources, cancellationToken);
                 }
             }
         });

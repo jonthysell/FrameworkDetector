@@ -25,5 +25,5 @@ public class DetectorResult
 
     public DetectorStatus Status { get; set; } = DetectorStatus.None;
 
-    public List<DetectorCheckResult> CheckResults { get; } = new List<DetectorCheckResult>();
+    public List<IDetectorCheckResult> CheckResults { get; } = [];
 }

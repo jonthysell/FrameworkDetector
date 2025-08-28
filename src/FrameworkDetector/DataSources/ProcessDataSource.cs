@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FrameworkDetector.DataSources;
@@ -26,7 +27,7 @@ public class ProcessDataSource : IDataSource
         ProcessId = processId;
     }
 
-    public Task<bool> LoadAndCacheDataAsync()
+    public Task<bool> LoadAndCacheDataAsync(CancellationToken cancellationToken)
     {
         Process = Process.GetProcessById(ProcessId);
 

@@ -56,10 +56,8 @@ public static class LoadedModulePresentCheck
 
     //// Actual check code run by engine
 
-    public static async Task<DetectorCheckResult> PerformCheckAsync(CheckDefinition<LoadedModulePresentInfo> info, DataSourceCollection dataSources, CancellationToken cancellationToken)
+    public static async Task PerformCheckAsync(CheckDefinition<LoadedModulePresentInfo> info, DataSourceCollection dataSources, DetectorCheckResult<LoadedModulePresentInfo> result, CancellationToken cancellationToken)
     {
-        var result = new DetectorCheckResult(info);        
-
         if (dataSources.TryGetSources(ProcessDataSource.Id, out ProcessDataSource[] processes))
         {
             result.Status = DetectorCheckStatus.InProgress;
@@ -91,12 +89,8 @@ public static class LoadedModulePresentCheck
         }
         else
         {
-            // No Data?
-            result.Status = DetectorCheckStatus.CompletedFailed;
+            // No Data = Error
+            result.Status = DetectorCheckStatus.Error;
         }
-
-        // TODO: DetectorCheckResult extraData?
-
-        return result;
     }
 }

@@ -3,6 +3,7 @@
 
 using FrameworkDetector.Checks;
 using FrameworkDetector.DataSources;
+using FrameworkDetector.Engine;
 using FrameworkDetector.Models;
 using System;
 using System.Threading;
@@ -30,16 +31,16 @@ public interface ICheckDefinition
     /// <param name="dataSources">Complete <see cref="DataSourceCollection"/> for an application.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<DetectorCheckResult> PerformCheckAsync(DataSourceCollection dataSources, CancellationToken cancellationToken);
+    public Task<IDetectorCheckResult> PerformCheckAsync(IDetector detector, DataSourceCollection dataSources, CancellationToken cancellationToken);
 }
 
 /// <summary>
 /// Runtime record created by a detector which links the specific check extension info (through its extension method to DetectorCheckList) with the specific metadata to be checked against by a particular detector.
 /// e.g. WPF needs to look for a specific dll.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">Type of additional information struct for storing information provided within the detector and needed to know which data in the datasource to look for. e.g. the specific module to search for.</typeparam>
 /// <param name="CheckRegistration">Reference to the specific registration of the check creating this entry.</param>
-/// <param name="Metadata">Additional metadata provided by a detector for this check to be passed in when executed.</param>
+/// <param name="Metadata">Additional metadata provided by a detector for this check to be passed in when executed. Included automatically within the <see cref="DetectorCheckResult{T}"/></param>
 public record CheckDefinition<T>(
     CheckRegistrationInfo<T> CheckRegistration,
     T Metadata
@@ -58,7 +59,20 @@ public record CheckDefinition<T>(
 
     //// Used to translate between the strongly-typed definition written by check extension author passed in as a delegate and the concreate generalized version the engine will call on the check.
     /// <inheritdoc/>
-    Task<DetectorCheckResult> ICheckDefinition.PerformCheckAsync(DataSourceCollection dataSources, CancellationToken cancellationToken) => PerformCheckAsync.Invoke(this, dataSources, cancellationToken);
+    async Task<IDetectorCheckResult> ICheckDefinition.PerformCheckAsync(IDetector detector, DataSourceCollection dataSources, CancellationToken cancellationToken)
+    {
+        // Create initial result holder linking the detector to this check being performed.
+        // Auto includes the additional metadata required by the check defined by the detector (and used by the check).
+        DetectorCheckResult<T> result = new(detector, this)
+        {
+            ExtraMetadata = Metadata
+        };
+
+        // Call the check extension to perform calculation and update result.
+        await PerformCheckAsync.Invoke(this, dataSources, result, cancellationToken);
+
+        return result;
+    }
 
     // TODO: IsRequired and Result here too? Or do we aggregate results separately?
 

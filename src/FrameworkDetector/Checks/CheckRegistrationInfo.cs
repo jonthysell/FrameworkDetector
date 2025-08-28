@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using FrameworkDetector.DataSources;
+using FrameworkDetector.Engine;
 using FrameworkDetector.Models;
 using System;
 using System.Threading;
@@ -28,6 +29,18 @@ public record CheckRegistrationInfo<T>(
 {
 }
 
-// TODO: Maybe have a helper/wrapper class around the datasource dictionary? i.e. have a helper which takes in the ids and returns the strongly typed datasource (or throws error if mismatch).
 // TODO: The index of datasources should be a source generator for better type safety and performance.
-public delegate Task<DetectorCheckResult> CheckFunction<T>(CheckDefinition<T> definition, DataSourceCollection dataSources, CancellationToken cancellationToken) where T : struct;
+
+/// <summary>
+/// The main execution source for a check extension. Called by the <see cref="DetectionEngine"/>.
+/// <see cref="CheckDefinition{T}.Metadata"/> can be retrieved for context provided by extension method on <see cref="DetectorCheckList"/> for definition within an <see cref="IDetector"/>.
+/// Lookup the required data in <see cref="DataSourceCollection"/> to match against the metadata.
+/// Update the <see cref="DetectorCheckResult{T}"/> with the status pass/fail/error (metadata is automatically attached).
+/// </summary>
+/// <typeparam name="T"><see cref="CheckDefinition{T}.Metadata"/></typeparam>
+/// <param name="definition"></param>
+/// <param name="dataSources"></param>
+/// <param name="result"></param>
+/// <param name="cancellationToken"></param>
+/// <returns></returns>
+public delegate Task CheckFunction<T>(CheckDefinition<T> definition, DataSourceCollection dataSources, DetectorCheckResult<T> result, CancellationToken cancellationToken) where T : struct;
