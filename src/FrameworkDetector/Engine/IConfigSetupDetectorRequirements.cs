@@ -17,6 +17,4 @@ public interface IConfigSetupDetectorRequirements
     /// <param name="checks">List of checks to perform.</param>
     /// <returns></returns>
     IConfigAdditionalDetectorRequirements Required(Func<DetectorCheckList, DetectorCheckList> checks);
-
-    DetectorDefinition BuildDefinition();
 }

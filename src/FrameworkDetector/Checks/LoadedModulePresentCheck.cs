@@ -62,6 +62,7 @@ public static class LoadedModulePresentCheck
         {
             result.Status = DetectorCheckStatus.InProgress;
 
+            // TODO: Think about child processes and what that means here for a check...
             foreach (ProcessDataSource process in processes)
             {
                 foreach (var module in process.Modules)
