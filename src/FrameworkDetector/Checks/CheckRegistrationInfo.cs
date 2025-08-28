@@ -30,4 +30,4 @@ public record CheckRegistrationInfo<T>(
 
 // TODO: Maybe have a helper/wrapper class around the datasource dictionary? i.e. have a helper which takes in the ids and returns the strongly typed datasource (or throws error if mismatch).
 // TODO: The index of datasources should be a source generator for better type safety and performance.
-public delegate Task<DetectorCheckResult> CheckFunction<T>(T info, DataSourceCollection dataSources, CancellationToken ct) where T : struct;
+public delegate Task<DetectorCheckResult> CheckFunction<T>(CheckDefinition<T> definition, DataSourceCollection dataSources, CancellationToken cancellationToken) where T : struct;

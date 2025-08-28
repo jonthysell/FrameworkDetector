@@ -5,7 +5,6 @@ using FrameworkDetector.DataSources;
 using FrameworkDetector.Engine;
 using FrameworkDetector.Models;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -57,42 +56,47 @@ public static class LoadedModulePresentCheck
 
     //// Actual check code run by engine
 
-    public static Task<DetectorCheckResult> PerformCheckAsync(LoadedModulePresentInfo info, DataSourceCollection dataSources, CancellationToken ct)
+    public static async Task<DetectorCheckResult> PerformCheckAsync(CheckDefinition<LoadedModulePresentInfo> info, DataSourceCollection dataSources, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = new DetectorCheckResult(info);        
 
-        /*var result = new DetectorCheckResult();
-
-        // TODO: DetectorCheckResult extraData
-        if (Process is null)
+        if (dataSources.TryGetSources(ProcessDataSource.Id, out ProcessDataSource[] processes))
         {
-            throw new ArgumentNullException(nameof(Process));
-        }
+            result.Status = DetectorCheckStatus.InProgress;
 
-        result.Status = DetectorCheckStatus.InProgress;
-
-        foreach (var processModule in Process.Modules.Cast<ProcessModule>())
-        {
-            await Task.Yield();
-
-            if (cancellationToken.IsCancellationRequested)
+            foreach (ProcessDataSource process in processes)
             {
-                result.Status = DetectorCheckStatus.Canceled;
-                break;
+                foreach (var module in process.Modules)
+                {
+                    await Task.Yield();
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        result.Status = DetectorCheckStatus.Canceled;
+                        break;
+                    }
+
+                    if (module.ModuleName.Equals(info.Metadata.ModuleName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        result.Status = DetectorCheckStatus.CompletedPassed;
+                        break;
+                    }
+                }
             }
 
-            if (processModule.ModuleName.Equals(ModuleName, StringComparison.InvariantCultureIgnoreCase))
+            if (result.Status == DetectorCheckStatus.InProgress)
             {
-                result.Status = DetectorCheckStatus.CompletedPassed;
-                break;
+                result.Status = DetectorCheckStatus.CompletedFailed;
             }
         }
-
-        if (result.Status == DetectorCheckStatus.InProgress)
+        else
         {
+            // No Data?
             result.Status = DetectorCheckStatus.CompletedFailed;
         }
 
-        return result.Status;*/
+        // TODO: DetectorCheckResult extraData?
+
+        return result;
     }
 }

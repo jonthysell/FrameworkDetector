@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Checks;
 using FrameworkDetector.DataSources;
 using FrameworkDetector.DetectorChecks;
 using FrameworkDetector.Models;
@@ -65,7 +66,7 @@ public class Detector : IConfigDetectorRequirements
         return Result.Status;
     }
 
-    protected void UpdateResult(IReadOnlyList<IDetectorCheck> checks, bool wasCanceled)
+    protected void UpdateResult(IReadOnlyList<ICheckDefinition> checks, bool wasCanceled)
     {
         var requiredCheckCount = 0;
         var requiredCheckSuccesses = 0;
@@ -73,7 +74,8 @@ public class Detector : IConfigDetectorRequirements
 
         foreach (var check in checks)
         {
-            if (check.IsRequired)
+            // TODO: Need to reconsile how reporting works...
+            /*if (check.IsRequired)
             {
                 requiredCheckCount++;
                 if (check.Result!.Status == DetectorCheckStatus.CompletedPassed)
@@ -90,7 +92,7 @@ public class Detector : IConfigDetectorRequirements
             if (check.Result!.Status is DetectorCheckStatus.CompletedPassed or DetectorCheckStatus.CompletedFailed)
             {
                 completedCount++;
-            }
+            }*/
         }
 
         if (requiredCheckCount == 0)

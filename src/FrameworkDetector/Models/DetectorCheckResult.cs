@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Checks;
 using FrameworkDetector.Engine;
 using System.Text.Json.Nodes;
 
@@ -17,13 +18,13 @@ public enum DetectorCheckStatus
 
 public class DetectorCheckResult
 {
-    public IDetectorCheck Detector;
+    public ICheckDefinition Detector;
 
     public DetectorCheckStatus Status { get; set; } = DetectorCheckStatus.None;
 
     public JsonObject? ExtraData { get; set; } = null;
 
-    public DetectorCheckResult(IDetectorCheck detectorCheck)
+    public DetectorCheckResult(ICheckDefinition detectorCheck)
     {
         Detector = detectorCheck;
     }
