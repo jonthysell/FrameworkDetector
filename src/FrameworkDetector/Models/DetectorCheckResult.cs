@@ -16,6 +16,9 @@ public enum DetectorCheckStatus
     Error,
 }
 
+/// <summary>
+/// Represents the status of an individual check of a specific detector.
+/// </summary>
 public interface IDetectorCheckResult
 {
     public IDetector Detector { get; }

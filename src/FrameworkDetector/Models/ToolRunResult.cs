@@ -6,6 +6,9 @@ using System.Text.Json;
 
 namespace FrameworkDetector.Models;
 
+/// <summary>
+/// Represents the overall result of all detectors run against an pp.
+/// </summary>
 public record ToolRunResult
 {
     public string ToolName { get; }
@@ -16,7 +19,7 @@ public record ToolRunResult
 
     public WindowsBinaryMetadata[] ProcessMetadata { get; private set; } = [];
 
-    public List<DetectorResult> Frameworks { get; set; } = new();
+    public List<DetectorResult> Detectors { get; set; } = [];
 
     public ToolRunResult(string toolName, string toolVersion, DataSourceCollection sources)
     {

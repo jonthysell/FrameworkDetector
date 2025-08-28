@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.Engine;
 using System.Collections.Generic;
 
 namespace FrameworkDetector.Models;
@@ -13,6 +14,10 @@ public enum DetectorStatus
     Completed,
 }
 
+/// <summary>
+/// Represents the overall result output of a given <see cref="IDetector"/>.
+/// Did the required check pass? What other metadata was used for that check, etc...
+/// </summary>
 public class DetectorResult
 {
     public required string DetectorName { get; set; }

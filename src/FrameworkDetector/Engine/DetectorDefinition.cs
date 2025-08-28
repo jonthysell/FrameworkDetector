@@ -21,6 +21,12 @@ public class DetectorDefinition : IConfigSetupDetectorRequirements, IConfigAddit
     {
         RequiredChecks = checks(new());
 
+        // Mark all required
+        foreach (var check in RequiredChecks)
+        {
+            check.IsRequired = true;
+        }
+
         return this;
     }
 
@@ -28,6 +34,12 @@ public class DetectorDefinition : IConfigSetupDetectorRequirements, IConfigAddit
     public IConfigAdditionalDetectorRequirements Optional(string subtitle, Func<DetectorCheckList, DetectorCheckList> checks)
     {
         OptionalChecks.Add(subtitle, checks(new()));
+
+        // Tag all metadata to the check
+        foreach (var check in OptionalChecks[subtitle])
+        {
+            check.OptionalMetadata = subtitle;
+        }
         
         return this;
     }

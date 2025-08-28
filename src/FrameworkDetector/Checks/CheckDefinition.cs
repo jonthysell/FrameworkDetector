@@ -18,12 +18,32 @@ namespace FrameworkDetector.Checks;
 /// </summary>
 public interface ICheckDefinition
 {
-    // TODO: Wondering if this is actually required to define by the check as currently we're just passing through all the data sources we have anyway... The check author has to grab the specific one they need anyway which they do through the IDataSource.Id right now anyway, so this is just more of a goodfaith declaration.
+    // TODO: Wondering if this is actually required to define by the check as currently we're just passing through all the data sources we have anyway... The check author has to grab the specific one they need anyway which they do through the IDataSource.Id right now anyway, so this is just more of a goodfaith declaration. It could be an extra check we do where if the data source is missing we throw an error or warning and don't run the check?
+    /// <summary>
+    /// Gets the list of required datasources this check expects to access to be able to run.
+    /// </summary>
     public Guid[] DataSourceIds { get; }
 
+    /// <summary>
+    /// Gets the description to be used as a ToString format with the Metadata.ToString() as a parameter.
+    /// </summary>
     public string Description { get; }
 
+    /// <summary>
+    /// Gets the short name of the check.
+    /// </summary>
     public string Name { get; }
+
+    /// <summary>
+    /// Gets or sets a flag indicating if this was a required check. Set automatically by <see cref="DetectorDefinition"/>.
+    /// </summary>
+    bool IsRequired { get; set; }
+
+    //// TODO: This is defined by the detector (not the check) as extra info about what it's looking for as an optional package. We could make this a more complex type, but not sure what other info we want at the moment. This would then change the signature to the DetectorDefinition.Optional method referenced below.
+    /// <summary>
+    /// Gets or sets extra metadata about the nature of an optional check. See <see cref="DetectorDefinition.Optional(string, Func{DetectorCheckList, DetectorCheckList})"/>. Set automatically.
+    /// </summary>
+    string? OptionalMetadata { get; set; }
 
     /// <summary>
     /// Performs the defined check against the provided <see cref="DataSourceCollection"/>.
@@ -46,16 +66,22 @@ public record CheckDefinition<T>(
     T Metadata
 ) : ICheckDefinition where T : struct
 {
+    /// <inheritdoc/>
     public string Name => CheckRegistration.Name;
 
-    /// <summary>
-    /// Description is used as a ToString format with the Metadata.ToString() as a parameter.
-    /// </summary>
+    /// <inheritdoc/>
     public string Description => CheckRegistration.Description;
 
+    /// <inheritdoc/>
     public Guid[] DataSourceIds => CheckRegistration.DataSourceIds;
 
     private CheckFunction<T> PerformCheckAsync => CheckRegistration.PerformCheckAsync;
+
+    /// <inheritdoc/>
+    public bool IsRequired { get; set; }
+
+    /// <inheritdoc/>
+    public string? OptionalMetadata { get; set; }
 
     //// Used to translate between the strongly-typed definition written by check extension author passed in as a delegate and the concreate generalized version the engine will call on the check.
     /// <inheritdoc/>
@@ -74,10 +100,8 @@ public record CheckDefinition<T>(
         return result;
     }
 
-    // TODO: IsRequired and Result here too? Or do we aggregate results separately?
-
     public override string ToString()
     {
-        return string.Format(Description, Metadata.ToString());
+        return string.Format((OptionalMetadata ?? $"Required ({IsRequired})") + ": " + Description, Metadata.ToString());
     }
 }
