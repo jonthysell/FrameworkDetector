@@ -2,7 +2,11 @@
 // Licensed under the MIT License.
 
 using FrameworkDetector.Checks;
+using FrameworkDetector.DataSources;
+using FrameworkDetector.Models;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FrameworkDetector.Checks;
 
@@ -13,10 +17,20 @@ namespace FrameworkDetector.Checks;
 /// </summary>
 public interface ICheckDefinition
 {
+    // TODO: Wondering if this is actually required to define by the check as currently we're just passing through all the data sources we have anyway... The check author has to grab the specific one they need anyway which they do through the IDataSource.Id right now anyway, so this is just more of a goodfaith declaration.
     public Guid[] DataSourceIds { get; }
 
     public string Description { get; }
+
     public string Name { get; }
+
+    /// <summary>
+    /// Performs the defined check against the provided <see cref="DataSourceCollection"/>.
+    /// </summary>
+    /// <param name="dataSources">Complete <see cref="DataSourceCollection"/> for an application.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<DetectorCheckResult> PerformCheckAsync(DataSourceCollection dataSources, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -33,11 +47,23 @@ public record CheckDefinition<T>(
 {
     public string Name => CheckRegistration.Name;
 
+    /// <summary>
+    /// Description is used as a ToString format with the Metadata.ToString() as a parameter.
+    /// </summary>
     public string Description => CheckRegistration.Description;
 
     public Guid[] DataSourceIds => CheckRegistration.DataSourceIds;
 
-    public CheckFunction<T> PerformCheckAsync => CheckRegistration.PerformCheckAsync;
+    private CheckFunction<T> PerformCheckAsync => CheckRegistration.PerformCheckAsync;
+
+    //// Used to translate between the strongly-typed definition written by check extension author passed in as a delegate and the concreate generalized version the engine will call on the check.
+    /// <inheritdoc/>
+    Task<DetectorCheckResult> ICheckDefinition.PerformCheckAsync(DataSourceCollection dataSources, CancellationToken cancellationToken) => PerformCheckAsync.Invoke(this, dataSources, cancellationToken);
 
     // TODO: IsRequired and Result here too? Or do we aggregate results separately?
+
+    public override string ToString()
+    {
+        return string.Format(Description, Metadata.ToString());
+    }
 }

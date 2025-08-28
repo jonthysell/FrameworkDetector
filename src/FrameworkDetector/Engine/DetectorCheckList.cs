@@ -4,6 +4,7 @@
 using FrameworkDetector.Checks;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace FrameworkDetector.Engine;
 
@@ -16,7 +17,9 @@ public class DetectorCheckList
     internal DetectorCheckList ContainsClass(string v)
     {
         // TODO: Move to it's own extension method file.
-        throw new NotImplementedException();
+        Debug.WriteLine("ContainsClass NOT IMPLEMENTED YET");
+
+        return this;
     }
     
     // TODO: How to make this accessible to extension but not detector?

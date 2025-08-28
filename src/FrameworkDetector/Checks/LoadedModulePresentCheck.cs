@@ -22,7 +22,7 @@ public static class LoadedModulePresentCheck
     /// </summary>
     private static CheckRegistrationInfo<LoadedModulePresentInfo> CheckRegistrationInfo = new(
         Name: nameof(LoadedModulePresentCheck),
-        Description: "Checks for moduleName in Process.LoadedModules",
+        Description: "Checks for {0} in Process.LoadedModules",
         DataSourceIds: [ProcessDataSource.Id],
         PerformCheckAsync
     );
@@ -34,6 +34,8 @@ public static class LoadedModulePresentCheck
     public readonly struct LoadedModulePresentInfo(string ModuleName)
     {
         public string ModuleName { get; } = ModuleName;
+
+        public override string ToString() => ModuleName;
     }
 
     extension(DetectorCheckList @this)

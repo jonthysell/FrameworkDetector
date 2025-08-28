@@ -100,6 +100,8 @@ internal static class Program
     {
         ServiceCollection services = new();
 
+        // TODO: Add a Logger here that we can use to report issues or record debug info, etc...
+
         // Add Detectors here.
         services.AddSingleton<IDetector, WpfDetector>();
         services.AddSingleton<IDetector, UWPXAMLDetector>();
