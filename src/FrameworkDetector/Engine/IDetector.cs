@@ -3,6 +3,14 @@
 
 namespace FrameworkDetector.Engine;
 
+public enum DetectorCategory
+{
+    Framework,
+    ProgrammingLanguage,
+    Library,
+    Component
+}
+
 public interface IDetector
 {
     string Name { get; }
@@ -12,7 +20,7 @@ public interface IDetector
     // TODO: Make this just a general Id?
     string FrameworkId { get; }
 
-    // TODO: We should have an enum for detector type here like Framework, Language, Library
+    DetectorCategory Category { get; }
 
     /// <summary>
     /// Main method to implement a detector's definition of requirements.

@@ -14,6 +14,8 @@ public class WpfDetector : IDetector
 
     public string FrameworkId => "WPF";
 
+    public DetectorCategory Category => DetectorCategory.Framework;
+
     public WpfDetector()
     {
     }

@@ -14,6 +14,8 @@ public class UWPXAMLDetector : IDetector
 
     public string FrameworkId => "UWP";
 
+    public DetectorCategory Category => DetectorCategory.Framework;
+
     public UWPXAMLDetector()
     {
     }
