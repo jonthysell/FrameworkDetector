@@ -45,8 +45,8 @@ public static class IDetectorExtensions
         ///         // WPF
         ///         return this.Create()
         ///             .Required(checks => checks
-        ///                 .ContainsModule("PresentationFramework.dll")
-        ///                 .ContainsModule("PresentationCore.dll"))
+        ///                 .ContainsLoadedModule("PresentationFramework.dll")
+        ///                 .ContainsLoadedModule("PresentationCore.dll"))
         ///             .BuildDefinition();
         ///     }
         /// </code>

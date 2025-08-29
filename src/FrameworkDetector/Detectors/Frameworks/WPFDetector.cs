@@ -29,10 +29,10 @@ public class WPFDetector : IDetector
         // WPF
         return this.Create()
             .Required("Presentation Framework", checks => checks
-                .ContainsModule("PresentationFramework.dll"))
+                .ContainsLoadedModule("PresentationFramework.dll", true))
             // OR
             .Required("Presentation Core", checks => checks
-                .ContainsModule("PresentationCore.dll"))
+                .ContainsLoadedModule("PresentationCore.dll", true))
             .BuildDefinition();
     }
 }

@@ -43,8 +43,8 @@ A Fluent API surface is used to construct detectors. For instance, a basic `IDet
     {
         return this.Create()
             .Required("Presentation Framework", checks => checks
-                .ContainsModule("PresentationFramework.dll")
-                .ContainsModule("PresentationCore.dll"))
+                .ContainsLoadedModule("PresentationFramework.dll")
+                .ContainsLoadedModule("PresentationCore.dll"))
             .BuildDefinition();
     }
 ```

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,13 +15,13 @@ namespace FrameworkDetector.Checks;
 /// <summary>
 /// Check extension for looking for a specific loaded module, present within a process.
 /// </summary>
-public static class LoadedModulePresentCheck
+public static class ContainsLoadedModuleCheck
 {
     /// <summary>
-    /// Static registration information defining the LoadedModulePresent Check
+    /// Static registration information defining the ContainsLoadedModule Check
     /// </summary>
-    private static CheckRegistrationInfo<LoadedModulePresentInfo> CheckRegistrationInfo = new(
-        Name: nameof(LoadedModulePresentCheck),
+    private static CheckRegistrationInfo<ContainsLoadedModuleInfo> CheckRegistrationInfo = new(
+        Name: nameof(ContainsLoadedModuleCheck),
         Description: "Checks for module by name in Process.LoadedModules",
         DataSourceIds: [ProcessDataSource.Id],
         PerformCheckAsync
@@ -29,10 +30,12 @@ public static class LoadedModulePresentCheck
     /// <summary>
     /// Structure for custom metadata provided by a detector (in this case the module name) required to perform the check.
     /// </summary>
-    /// <param name="ModuleName"></param>
-    public readonly struct LoadedModulePresentInfo(string ModuleName)
+    /// <param name="moduleName"></param>
+    public readonly struct ContainsLoadedModuleInfo(string moduleName, bool checkForNGenModule)
     {
-        public string ModuleName { get; } = ModuleName;
+        public string ModuleName { get; } = moduleName;
+
+        public bool CheckForNGenModule { get; } = checkForNGenModule;
 
         public override string ToString() => ModuleName;
     }
@@ -44,12 +47,12 @@ public static class LoadedModulePresentCheck
         /// </summary>
         /// <param name="moduleName"></param>
         /// <returns></returns>
-        public DetectorCheckGroup ContainsModule(string moduleName)
+        public DetectorCheckGroup ContainsLoadedModule(string moduleName, bool checkForNGenModule = false)
         {
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
             // will be passed into the PerformCheckAsync method below to do the actual check.
-            @this.AddCheck(new CheckDefinition<LoadedModulePresentInfo>(CheckRegistrationInfo, new LoadedModulePresentInfo(moduleName)));
+            @this.AddCheck(new CheckDefinition<ContainsLoadedModuleInfo>(CheckRegistrationInfo, new ContainsLoadedModuleInfo(moduleName, checkForNGenModule)));
 
             return @this;
         }
@@ -57,11 +60,17 @@ public static class LoadedModulePresentCheck
 
     //// Actual check code run by engine
 
-    public static async Task PerformCheckAsync(CheckDefinition<LoadedModulePresentInfo> info, DataSourceCollection dataSources, DetectorCheckResult<LoadedModulePresentInfo> result, CancellationToken cancellationToken)
+    public static async Task PerformCheckAsync(CheckDefinition<ContainsLoadedModuleInfo> info, DataSourceCollection dataSources, DetectorCheckResult<ContainsLoadedModuleInfo> result, CancellationToken cancellationToken)
     {
         if (dataSources.TryGetSources(ProcessDataSource.Id, out ProcessDataSource[] processes))
         {
             result.Status = DetectorCheckStatus.InProgress;
+
+            string? nGenModuleName = null;
+            if (info.Metadata.CheckForNGenModule)
+            {
+                nGenModuleName = Path.ChangeExtension(info.Metadata.ModuleName, ".ni" + Path.GetExtension(info.Metadata.ModuleName));
+            }
 
             // TODO: Think about child processes and what that means here for a check...
             foreach (ProcessDataSource process in processes)
@@ -77,6 +86,11 @@ public static class LoadedModulePresentCheck
                     }
 
                     if (module.ModuleName.Equals(info.Metadata.ModuleName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        result.Status = DetectorCheckStatus.CompletedPassed;
+                        break;
+                    }
+                    else if (info.Metadata.CheckForNGenModule && module.ModuleName.Equals(nGenModuleName, StringComparison.InvariantCultureIgnoreCase))
                     {
                         result.Status = DetectorCheckStatus.CompletedPassed;
                         break;
