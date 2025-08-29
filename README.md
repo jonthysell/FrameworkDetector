@@ -5,13 +5,26 @@ A library and set of tools for detecting the frameworks and components used to b
 ## Setup
 
 1. Make sure you have the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) installed.
-
-2. If using Visual Studio Stable, enable "Use previews of the .NET SDK (requires restart)" under Tools->Options->Environment->Preview Features.
+2. If using Visual Studio Stable, enable `Use previews of the .NET SDK (requires restart)` under `Tools->Options->Environment->Preview Features`.
 
 ## Usage
 
+### Inspect by Process Id (PID)
+
+```ps
+dotnet run --project ./src/FrameworkDetector.CLI -- --processId ###
+```
+
+*OR*
+
 ```ps
 dotnet run --project ./src/FrameworkDetector.CLI -- --pid ###
+```
+
+### Inspect by Process Name
+
+```ps
+dotnet run --project ./src/FrameworkDetector.CLI -- --processName ###
 ```
 
 ## Project Structure
@@ -42,7 +55,7 @@ Optional groups can also be defined, they have no impact on detection. They are 
 
 ### FrameworkDetector.CLI
 
-A commandline tool to initialize and run the library to detect a specific process, see Usage above.
+A commandline tool to initialize and run the library to inspect a specific process, see [Usage](#usage) above.
 
 ## License
 

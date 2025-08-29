@@ -1,16 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using FrameworkDetector.DataSources;
 using FrameworkDetector.Detectors;
 using FrameworkDetector.Engine;
 using FrameworkDetector.Models;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FrameworkDetector.CLI;
 
@@ -25,14 +28,19 @@ internal static class Program
     {
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-        Option<int> pidOption = new("--processId", "--pid")
+        Option<int?> pidOption = new("--processId", "--pid")
         {
-            Description = "The process ID to inspect.",
-            Required = true,
+            Description = "The PID of the process to inspect.",
+        };
+
+        Option<string?> processNameOption = new("--processName")
+        {
+            Description = "The name of the process to inspect.",
         };
 
         RootCommand rootCommand = new("Framework Detector");
         rootCommand.Options.Add(pidOption);
+        rootCommand.Options.Add(processNameOption);
 
         // TODO: Not familiar enough with System.CommandLine lib yet to understand if we have multiple data sources how to chain them together.
         // Basically each parameter should create it's datasource to add to the list passed into the DetectionEngine.
@@ -41,7 +49,33 @@ internal static class Program
         {
             if (parseResult.GetValue(pidOption) is int processId)
             {
-                if (await InspectProcess(processId, cancellationToken))
+                if (await InspectProcess(Process.GetProcessById(processId), cancellationToken))
+                {
+                    return 0;
+                }
+
+                // TODO: Define an error code enum somewhere for various error conditions
+                return 2;
+            }
+            else if (parseResult.GetValue(processNameOption) is string processName)
+            {
+                var processes = Process.GetProcessesByName(processName);
+
+                if (processes.Length == 0)
+                {
+                    Console.Error.WriteLine($"Unable to find processes with name \"{processName}\".");
+                }
+                else if (processes.Length > 1)
+                {
+                    //TODO: figure out how if want to handle inspecting multiple processes and how to output the results.
+                    Console.Error.WriteLine($"More than one process with name \"{processName}\":");
+                    foreach (var process in processes)
+                    {
+                        Console.Error.WriteLine($"  {process.ProcessName}({process.Id})");
+                    }
+                    Console.Error.WriteLine($"Please run again with the PID of the specific process you wish to inspect.");
+                }
+                else if (await InspectProcess(processes[0], cancellationToken))
                 {
                     return 0;
                 }
@@ -66,12 +100,12 @@ internal static class Program
     }
 
     //// Encapsulation of initializing datasource and grabbing engine reference to kick-off a detection against all registered detectors (see ConfigureServices)
-    private static async Task<bool> InspectProcess(int processId, CancellationToken cancellationToken)
+    private static async Task<bool> InspectProcess(Process process, CancellationToken cancellationToken)
     {
         // TODO: Probably have this elsewhere to be called
-        Console.WriteLine($"Inspecting process with ID: {processId}");
+        Console.WriteLine($"Inspecting process {process.ProcessName}({process.Id})");
 
-        DataSourceCollection sources = new([new ProcessDataSource(processId)]);
+        DataSourceCollection sources = new([new ProcessDataSource(process)]);
 
         var progressIndicator = new Progress<int>(ReportProgress);
 
