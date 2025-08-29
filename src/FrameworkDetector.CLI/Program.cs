@@ -175,7 +175,7 @@ internal static class Program
         services.AddSingleton<IDetector, MVVMToolkitDetector>();
         services.AddSingleton<IDetector, UWPXAMLDetector>();
         services.AddSingleton<IDetector, WebView2Detector>();
-        services.AddSingleton<IDetector, WpfDetector>();
+        services.AddSingleton<IDetector, WPFDetector>();
 
         // Note: An alternate setup we could have would be to setup each check as a class as well to inject here.
         // Then we could theoretically have datasources be keyed to request in their constructors: https://learn.microsoft.com/dotnet/core/extensions/dependency-injection#keyed-services
