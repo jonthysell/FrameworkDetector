@@ -44,6 +44,6 @@ Optional groups can also be defined, they have no impact on detection. They are 
 
 A commandline tool to initialize and run the library to detect a specific process, see Usage above.
 
-## Licence
+## License
 
 MIT
