@@ -10,7 +10,7 @@ public class WebView2Detector : IDetector
 {
     public string Name => nameof(WebView2Detector);
 
-    public string Description => "WebView2 Detector";
+    public string Description => "Microsoft Edge WebView2";
 
     public string FrameworkId => "WebView2";
 

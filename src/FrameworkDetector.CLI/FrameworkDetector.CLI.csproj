@@ -14,6 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="ConsoleTables" />
   </ItemGroup>
 
 </Project>

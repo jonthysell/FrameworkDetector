@@ -6,9 +6,11 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ConsoleTables;
 using Microsoft.Extensions.DependencyInjection;
 
 using FrameworkDetector.DataSources;
@@ -144,16 +146,46 @@ internal static class Program
 
         Console.WriteLine();
 
+        PrintResult(result);
+
+        TrySaveOutput(result, outputFilename);
+
+        // TODO: Return false on failure
+        return true;
+    }
+
+    private static void PrintResult(ToolRunResult result)
+    {
+        var table = new ConsoleTable(nameof(DetectorResult.DetectorName),
+                                     nameof(DetectorResult.DetectorDescription),
+                                     nameof(DetectorResult.DetectorStatus),
+                                     nameof(DetectorResult.FrameworkId),
+                                     nameof(DetectorResult.FrameworkFound));
+
+        table.Options.EnableCount = false;
+
+        foreach (var detectorResult in result.DetectorResults.OrderByDescending(dr => dr.FrameworkFound).ThenBy(dr => dr.DetectorName))
+        {
+            table.AddRow(detectorResult.DetectorName, detectorResult.DetectorDescription, detectorResult.DetectorStatus, detectorResult.FrameworkId, detectorResult.FrameworkFound);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Detection Results:");
+        table.Write();
+    }
+
+    private static bool TrySaveOutput(ToolRunResult result, string? outputFilename)
+    {
         if (!string.IsNullOrWhiteSpace(outputFilename))
         {
             Console.WriteLine($"Saving output to: \"{outputFilename}\".");
 
             using var outputWriter = new StreamWriter(outputFilename);
             outputWriter.WriteLine(result.ToString());
+            return true;
         }
 
-        // TODO: Return false on failure
-        return true;
+        return false;
     }
 
     private static void PrintException(Exception ex, string messageFormat = "Error: {0}", bool showStackTrace = true)

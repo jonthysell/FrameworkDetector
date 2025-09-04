@@ -23,13 +23,15 @@ public class DetectorResult
 {
     public required string DetectorName { get; set; }
 
+    public required string DetectorDescription { get; set; }
+
     public required string DetectorVersion { get; set; }
 
     public required string FrameworkId { get; set; }
 
     public bool FrameworkFound { get; set; } = false;
 
-    public DetectorStatus Status { get; set; } = DetectorStatus.None;
+    public DetectorStatus DetectorStatus { get; set; } = DetectorStatus.None;
 
     // TODO: Q: Do we want these effectively grouped by groups, i.e. the DetectorCheckGroup Name?
     public List<IDetectorCheckResult> CheckResults { get; } = [];

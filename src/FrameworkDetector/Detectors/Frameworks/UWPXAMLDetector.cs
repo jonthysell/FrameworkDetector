@@ -12,7 +12,7 @@ public class UWPXAMLDetector : IDetector
 
     public string Description => "Universal Windows Platform XAML";
 
-    public string FrameworkId => "UWP";
+    public string FrameworkId => "UWPXAML";
 
     public DetectorCategory Category => DetectorCategory.Framework;
 

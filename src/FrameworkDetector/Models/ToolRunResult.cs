@@ -22,7 +22,7 @@ public record ToolRunResult
 
     public Dictionary<Guid, List<object?>?> DataSources { get; } 
 
-    public List<DetectorResult> Detectors { get; set; } = [];
+    public List<DetectorResult> DetectorResults { get; set; } = [];
 
     public ToolRunResult(string toolName, string toolVersion, DataSourceCollection sources)
     {
@@ -47,14 +47,6 @@ public record ToolRunResult
                 }
             }
         }
-
-        //// TODO: We may want to think about this as an extension point where each DataSource can add info to the Run Result data...?
-        //// For now just pipe metadata from our process datasource.
-        //if (sources.TryGetSources(ProcessDataSource.Id, out ProcessDataSource[] processes))
-        //{
-        //    ProcessMetadata = [.. processes.Where(static p => p.ProcessMetadata != null)
-        //                                   .Select(static p => p.ProcessMetadata!)];
-        //}
     }
 
     public override string ToString()

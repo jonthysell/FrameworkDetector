@@ -63,10 +63,10 @@ public class DetectionEngine
             DetectorResult detectorResult = new()
             {
                 DetectorName = detector.Info.Name,
-                // TODO: Do we want a version field on each detector, as otherwise if this is just the tool version then why also include it here?
+                DetectorDescription = detector.Info.Description,
                 DetectorVersion = AssemblyInfo.LibraryVersion,
                 FrameworkId = detector.Info.FrameworkId,
-                Status = DetectorStatus.InProgress
+                DetectorStatus = DetectorStatus.InProgress
             };
 
             // Required checks ALL need to pass for the framework to be detected and reported as such, from any single required group.
@@ -131,7 +131,7 @@ public class DetectionEngine
             }
 
             // TODO: We need to mark cancelled status somewhere?
-            detectorResult.Status = DetectorStatus.Completed;
+            detectorResult.DetectorStatus = DetectorStatus.Completed;
 
             // Add to main collection of results.
             allDetectorResults.Add(detectorResult);
@@ -144,7 +144,7 @@ public class DetectionEngine
         });
 
         // Step 3. Aggregate/Finalize all the results?
-        result.Detectors = allDetectorResults.ToList();
+        result.DetectorResults = allDetectorResults.ToList();
 
         return result;
     }

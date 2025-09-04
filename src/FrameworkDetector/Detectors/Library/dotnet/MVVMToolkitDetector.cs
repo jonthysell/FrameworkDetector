@@ -12,7 +12,7 @@ public class MVVMToolkitDetector : IDetector
 
     public string Description => "MVVM Toolkit";
 
-    public string FrameworkId => "MVVM";
+    public string FrameworkId => "MVVMToolkit";
 
     public DetectorCategory Category => DetectorCategory.Library;
 
