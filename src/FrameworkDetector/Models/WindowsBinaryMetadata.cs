@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FrameworkDetector.Models;
 
@@ -11,15 +13,20 @@ public record WindowsBinaryMetadata(string Filename,
                                     string? OriginalFilename, 
                                     string? FileVersion, 
                                     string? ProductName, 
-                                    string? ProductVersion)
-{    
-    public static WindowsBinaryMetadata GetMetadata(Process process) => GetMetadata(process.MainModule?.FileName);
-
-    public static WindowsBinaryMetadata GetMetadata(string? filename)
+                                    string? ProductVersion) : FileMetadata(Filename)
+{
+    public static new async Task<WindowsBinaryMetadata?> GetMetadataAsync(string? filename, CancellationToken cancellationToken)
     {
         if (filename is null)
         {
             throw new ArgumentNullException(nameof(filename));
+        }
+
+        await Task.Yield();
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return await Task.FromCanceled<WindowsBinaryMetadata?>(cancellationToken);
         }
 
         var fileVersionInfo = FileVersionInfo.GetVersionInfo(filename);

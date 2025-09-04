@@ -25,6 +25,11 @@ public interface IDataSource
     Guid GetId();
 
     /// <summary>
+    /// The cached data that can be serialized to output.
+    /// </summary>
+    object? Data { get; }
+
+    /// <summary>
     /// Called during initialization for the data source to snapshot data about an application and cache for use by all detectors.
     /// </summary>
     /// <returns></returns>

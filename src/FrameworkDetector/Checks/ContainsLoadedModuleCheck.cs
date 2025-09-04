@@ -77,25 +77,29 @@ public static class ContainsLoadedModuleCheck
             // TODO: Think about child processes and what that means here for a check...
             foreach (ProcessDataSource process in processes)
             {
-                foreach (var module in process.Modules)
+                var loadedModules = process.ProcessMetadata?.LoadedModules;
+                if (loadedModules is not null)
                 {
-                    await Task.Yield();
+                    foreach (var module in loadedModules)
+                    {
+                        await Task.Yield();
 
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        result.Status = DetectorCheckStatus.Canceled;
-                        break;
-                    }
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            result.Status = DetectorCheckStatus.Canceled;
+                            break;
+                        }
 
-                    if (module.ModuleName.Equals(info.Metadata.ModuleName, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        result.Status = DetectorCheckStatus.CompletedPassed;
-                        break;
-                    }
-                    else if (info.Metadata.CheckForNgenModule && module.ModuleName.Equals(nGenModuleName, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        result.Status = DetectorCheckStatus.CompletedPassed;
-                        break;
+                        if (module.Filename.Equals(info.Metadata.ModuleName, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            result.Status = DetectorCheckStatus.CompletedPassed;
+                            break;
+                        }
+                        else if (info.Metadata.CheckForNgenModule && module.Filename.Equals(nGenModuleName, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            result.Status = DetectorCheckStatus.CompletedPassed;
+                            break;
+                        }
                     }
                 }
             }

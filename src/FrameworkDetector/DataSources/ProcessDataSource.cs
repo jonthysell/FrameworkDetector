@@ -2,9 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,13 +13,12 @@ namespace FrameworkDetector.DataSources;
 public class ProcessDataSource : IDataSource
 {
     public static Guid Id => new Guid("9C719E0C-2E53-4379-B2F5-C90F47E6C730");
+
     public Guid GetId() => Id; //// Passthru
 
-    public int ProcessId => Process.Id;
+    public object? Data => ProcessMetadata;
 
-    public IReadOnlyList<ProcessModule> Modules { get; private set; } = Array.Empty<ProcessModule>();
-
-    public WindowsBinaryMetadata? Metadata { get; private set; }
+    public ProcessMetadata? ProcessMetadata { get; private set; } = null;
 
     internal Process Process { get; private set; }
 
@@ -30,12 +27,10 @@ public class ProcessDataSource : IDataSource
         Process = process;
     }
 
-    public Task<bool> LoadAndCacheDataAsync(CancellationToken cancellationToken)
+    public async Task<bool> LoadAndCacheDataAsync(CancellationToken cancellationToken)
     {
-        Modules = Process.Modules.Cast<ProcessModule>().ToList();
+        ProcessMetadata = await ProcessMetadata.GetMetadataAsync(Process, cancellationToken);
 
-        Metadata = WindowsBinaryMetadata.GetMetadata(Process);
-
-        return Task.FromResult(true);
+        return true;
     }
 }

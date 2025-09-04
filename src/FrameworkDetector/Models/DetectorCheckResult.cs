@@ -41,7 +41,7 @@ public record DetectorCheckResult<T>(
     public DetectorCheckStatus Status { get; set; } = DetectorCheckStatus.None;
 
     /// <summary>
-    /// Gets the Metadata type registered by the check to store information from Detector defintion for processing. Automatically populated by <see cref="CheckDefinition{T}"/>.
+    /// Gets the ProcessMetadata type registered by the check to store information from Detector defintion for processing. Automatically populated by <see cref="CheckDefinition{T}"/>.
     /// </summary>
     public T? ExtraMetadata { get; set; }
 

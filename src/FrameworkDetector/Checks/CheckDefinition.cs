@@ -26,7 +26,7 @@ public interface ICheckDefinition
     public Guid[] DataSourceIds { get; }
 
     /// <summary>
-    /// Gets the description to be used as a ToString format with the Metadata.ToString() as a parameter.
+    /// Gets the description to be used as a ToString format with the ProcessMetadata.ToString() as a parameter.
     /// </summary>
     public string Description { get; }
 
