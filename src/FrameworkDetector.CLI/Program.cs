@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -166,7 +166,7 @@ internal static class Program
 
         foreach (var detectorResult in result.DetectorResults.OrderByDescending(dr => dr.FrameworkFound).ThenBy(dr => dr.DetectorName))
         {
-            table.AddRow(detectorResult.DetectorName, detectorResult.DetectorDescription, detectorResult.DetectorStatus, detectorResult.FrameworkId, detectorResult.FrameworkFound);
+            table.AddRow(detectorResult.DetectorName, detectorResult.DetectorDescription, detectorResult.DetectorStatus, detectorResult.FrameworkId, detectorResult.FrameworkFound ? "✅" : "❌");
         }
 
         Console.WriteLine();
