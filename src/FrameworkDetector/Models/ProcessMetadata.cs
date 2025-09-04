@@ -41,13 +41,12 @@ public record ProcessMetadata(string Filename,
             }
         }
 
-        return new ProcessMetadata(
-                                Path.GetFileName(fileVersionInfo.FileName),
-                                fileVersionInfo.OriginalFilename,
-                                fileVersionInfo.FileVersion,
-                                fileVersionInfo.ProductName,
-                                fileVersionInfo.ProductVersion,
-                                process.Id,
-                                loadedModules.ToArray());
+        return new ProcessMetadata(Path.GetFileName(fileVersionInfo.FileName),
+                                   fileVersionInfo.OriginalFilename,
+                                   fileVersionInfo.FileVersion,
+                                   fileVersionInfo.ProductName,
+                                   fileVersionInfo.ProductVersion,
+                                   process.Id,
+                                   loadedModules.ToArray());
     }
 }
