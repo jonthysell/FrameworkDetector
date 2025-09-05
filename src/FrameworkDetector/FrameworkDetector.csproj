@@ -4,6 +4,7 @@
     <AssemblyName>FrameworkDetector</AssemblyName>
     <RootNamespace>FrameworkDetector</RootNamespace>
     <IsPublishable>false</IsPublishable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

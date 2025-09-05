@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using FrameworkDetector.DetectorChecks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,8 @@ public record ProcessMetadata(string Filename,
                               string? ProductName,
                               string? ProductVersion,
                               int? ProcessId,
-                              WindowsBinaryMetadata[]? LoadedModules) : WindowsBinaryMetadata(Filename, OriginalFilename, FileVersion, ProductName, ProductVersion)
+                              WindowsBinaryMetadata[]? LoadedModules,
+                              ProcessWindowMetadata[]? ActiveWindows) : WindowsBinaryMetadata(Filename, OriginalFilename, FileVersion, ProductName, ProductVersion)
 {
 
     public static async Task<ProcessMetadata?> GetMetadataAsync(Process process, CancellationToken cancellationToken)
@@ -41,12 +43,15 @@ public record ProcessMetadata(string Filename,
             }
         }
 
+        var activeWindows = process.GetActiveWindowMetadata();
+
         return new ProcessMetadata(Path.GetFileName(fileVersionInfo.FileName),
                                    fileVersionInfo.OriginalFilename,
                                    fileVersionInfo.FileVersion,
                                    fileVersionInfo.ProductName,
                                    fileVersionInfo.ProductVersion,
                                    process.Id,
-                                   loadedModules.ToArray());
+                                   loadedModules.ToArray(),
+                                   activeWindows.ToArray());
     }
 }
