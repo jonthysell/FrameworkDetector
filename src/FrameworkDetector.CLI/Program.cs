@@ -7,6 +7,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,6 +38,8 @@ internal static class Program
     public static int Main(string[] args)
     {
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+        Console.OutputEncoding = Encoding.UTF8;
 
         Option<int?> pidOption = new("--processId", "--pid")
         {
