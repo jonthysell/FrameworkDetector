@@ -22,7 +22,6 @@ public class UWPXAMLDetector : IDetector
 
     public DetectorDefinition CreateDefinition()
     {
-        // UWP
         return this.Create()
             .Required("Windows UI XAML", checks => checks
                 .ContainsLoadedModule("windows.ui.xaml.dll"))
@@ -33,6 +32,5 @@ public class UWPXAMLDetector : IDetector
             .BuildDefinition();
 
         // TODO: Do we want an optional check for UWP for .NET here or as a separate detector? (Not sure if overlap or would be different... needs investigation)
-        // TODO: Do we want an optional check for WinUI 2 (MUXC) here or as a separate detector?
     }
 }

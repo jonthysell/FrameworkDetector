@@ -26,7 +26,6 @@ public class RNWDetector : IDetector
     
     public DetectorDefinition CreateDefinition()
     {
-        // WPF
         return this.Create()
             .Required("Microsoft.ReactNative", checks => checks
                 .ContainsLoadedModule("Microsoft.ReactNative.dll", true))

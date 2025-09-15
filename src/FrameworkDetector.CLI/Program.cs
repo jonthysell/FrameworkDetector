@@ -242,6 +242,8 @@ internal static class Program
         services.AddSingleton<IDetector, UWPXAMLDetector>();
         services.AddSingleton<IDetector, WebView2Detector>();
         services.AddSingleton<IDetector, WinFormsDetector>();
+        services.AddSingleton<IDetector, WinUI2Detector>();
+        services.AddSingleton<IDetector, WinUI3Detector>();
         services.AddSingleton<IDetector, WPFDetector>();
 
         // Note: An alternate setup we could have would be to setup each check as a class as well to inject here.

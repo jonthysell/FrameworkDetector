@@ -26,7 +26,6 @@ public class WinFormsDetector : IDetector
     
     public DetectorDefinition CreateDefinition()
     {
-        // WPF
         return this.Create()
             .Required("Windows Forms", checks => checks
                 .ContainsLoadedModule("System.Windows.Forms.dll", true))

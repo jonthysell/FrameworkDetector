@@ -22,7 +22,7 @@ public class WebView2Detector : IDetector
     
     public DetectorDefinition CreateDefinition()
     {
-        // WebView2 (Partial)
+        // Partial
         // https://learn.microsoft.com/microsoft-edge/webview2/concepts/distribution?tabs=dotnetcsharp#files-to-ship-with-the-app
         return this.Create()
             .Required("WebView2Loader", checks => checks
