@@ -92,7 +92,7 @@ public static class ContainsWindowClassCheck
                             break;
                         }
 
-                        if (window.ClassName.Contains(definition.CheckArguments.WindowClassName, StringComparison.InvariantCultureIgnoreCase))
+                        if (window.ClassName is not null && window.ClassName.Contains(definition.CheckArguments.WindowClassName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             result.OutputData = new ContainsWindowClassData(window);
                             result.CheckStatus = DetectorCheckStatus.CompletedPassed;
