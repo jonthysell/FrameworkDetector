@@ -57,14 +57,16 @@ public static class ProcessExtensions
                 var threadID = hwnd.GetWindowThreadProcessId(out var processID);
                 if (threadID > 0)
                 {
-                    if (processID == process.Id)
+                    var processMatch = processID == process.Id;
+                    if (processMatch)
                     {
-                        // Add the windows for the process
+                        // Add the top-level windows for the process
                         addWindow(hwnd);
                     }
-                    else if (applicationFrameHosts.Where(p => p.Id == processID).Any())
+
+                    if (processMatch || applicationFrameHosts.Where(p => p.Id == processID).Any())
                     {
-                        // Add the windows for the process that are currently paired with ApplicationFrameHost
+                        // Add child windows plus any for the process that are currently parented with with ApplicationFrameHost
                         hwnd.EnumChildWindows(child =>
                         {
                             try
