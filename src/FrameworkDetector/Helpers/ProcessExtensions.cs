@@ -66,7 +66,7 @@ public static class ProcessExtensions
 
                     if (processMatch || applicationFrameHosts.Where(p => p.Id == processID).Any())
                     {
-                        // Add child windows plus any for the process that are currently parented with with ApplicationFrameHost
+                        // Add child windows plus any for the process that are currently parented with ApplicationFrameHost
                         hwnd.EnumChildWindows(child =>
                         {
                             try
