@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
 using System.Management;
 using Windows.Win32.Foundation;
 
@@ -30,27 +29,60 @@ public static class ProcessExtensions
     {
         var windows = new List<ProcessWindowMetadata>();
 
-        HWND.EnumWindows(hwnd => 
+        var applicationFrameHosts = Process.GetProcessesByName("ApplicationFrameHost");
+
+        var addWindow = (HWND hwnd) =>
         {
             try
             {
-                if (hwnd.GetWindowThreadProcessId(out var processID) > 0 && processID == process.Id)
-                {
-                    var className = hwnd.GetClassName();
-                    var windowText = hwnd.GetWindowText();
+                var className = hwnd.GetClassName();
+                var windowText = hwnd.GetWindowText();
 
-                    if (className is not null || windowText is not null)
+                if (className is not null || windowText is not null)
+                {
+                    windows.Add(new ProcessWindowMetadata(className,
+                                                          windowText,
+                                                          hwnd.IsWindowVisible()));
+                }
+            }
+            catch { }
+
+            return true;
+        };
+
+        HWND.EnumWindows((HWND hwnd) =>
+        {
+            try
+            {
+                var threadID = hwnd.GetWindowThreadProcessId(out var processID);
+                if (threadID > 0)
+                {
+                    if (processID == process.Id)
                     {
-                        windows.Add(new ProcessWindowMetadata(className,
-                                                              windowText,
-                                                              hwnd.IsWindowVisible()));
+                        // Add the windows for the process
+                        addWindow(hwnd);
+                    }
+                    else if (applicationFrameHosts.Where(p => p.Id == processID).Any())
+                    {
+                        // Add the windows for the process that are currently paired with ApplicationFrameHost
+                        hwnd.EnumChildWindows(child =>
+                        {
+                            try
+                            {
+                                var threadID = child.GetWindowThreadProcessId(out var processID);
+                                if (threadID > 0 && processID == process.Id)
+                                {
+                                    addWindow(child);
+                                }
+                            }
+                            catch { }
+
+                            return true;
+                        });
                     }
                 }
             }
-            catch
-            {
-                return false;
-            }
+            catch { }
 
             return true;
         });

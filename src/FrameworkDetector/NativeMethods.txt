@@ -1,3 +1,4 @@
+EnumChildWindows
 EnumWindows
 GetClassName
 GetShellWindow

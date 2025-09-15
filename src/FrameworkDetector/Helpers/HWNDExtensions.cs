@@ -10,6 +10,8 @@ namespace FrameworkDetector.DetectorChecks;
 
 internal static class HWNDExtensions
 {
+    public static bool EnumChildWindows(this HWND parentHwnd, Func<HWND, bool> func) => PInvoke.EnumChildWindows(parentHwnd, (hwnd, _) => func(hwnd), IntPtr.Zero);
+
     extension(HWND hwnd)
     {
         public static bool EnumWindows(Func<HWND, bool> func) => PInvoke.EnumWindows((hwnd, _) => func(hwnd), IntPtr.Zero);
