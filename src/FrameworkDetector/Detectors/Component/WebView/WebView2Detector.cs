@@ -27,7 +27,8 @@ public class WebView2Detector : IDetector
         return this.Create()
             .Required("WebView2Loader", checks => checks
                 .ContainsLoadedModule("WebView2Loader.dll"))
-            .Optional(".NET Managed Core", checks => checks
+            // OR
+            .Required("WebView2.Core", checks => checks
                 .ContainsLoadedModule("Microsoft.Web.WebView2.Core.dll"))
             .Optional(".NET Managed WPF", checks => checks
                 .ContainsLoadedModule("Microsoft.Web.WebView2.WPF.dll"))
