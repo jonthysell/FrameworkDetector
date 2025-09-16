@@ -28,10 +28,10 @@ public class WPFDetector : IDetector
     {
         return this.Create()
             .Required("Presentation Framework", checks => checks
-                .ContainsLoadedModule("PresentationFramework.dll", true))
+                .ContainsLoadedModule(@"PresentationFramework(\.ni)?\.dll"))
             // OR
             .Required("Presentation Core", checks => checks
-                .ContainsLoadedModule("PresentationCore.dll", true))
+                .ContainsLoadedModule(@"PresentationCore(\.ni)?\.dll"))
             .BuildDefinition();
     }
 }

@@ -23,15 +23,14 @@ public class DotNetFrameworkDetector : IDetector
     public DetectorDefinition CreateDefinition()
     {
         return this.Create()
-            .Required("CLR", checks => checks
-                .ContainsLoadedModule("clr.dll"))
-            // OR
             .Required("mscorlib", checks => checks
-                .ContainsLoadedModule("mscorlib.dll", true))
+                .ContainsLoadedModule(@"mscorlib(\.ni)?\.dll"))
+            .Optional("CLR", checks => checks
+                .ContainsLoadedModule(@"clr\.dll"))
             .Optional("clrjit", checks => checks
-                .ContainsLoadedModule("clrjit.dll"))
-            .Required("mscorjit", checks => checks
-                .ContainsLoadedModule("mscorjit.dll"))
+                .ContainsLoadedModule(@"clrjit\.dll"))
+            .Optional("mscorjit", checks => checks
+                .ContainsLoadedModule(@"mscorjit\.dll"))
             .BuildDefinition();
     }
 }
