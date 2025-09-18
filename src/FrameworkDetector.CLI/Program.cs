@@ -45,8 +45,11 @@ internal static class Program
             GetInspectCommand(),
         };
 
+        var config = new CommandLineConfiguration(rootCommand);
+        config.EnableDefaultExceptionHandler = false;
+
         var cts = new CancellationTokenSource();
-        return await rootCommand.Parse(args).InvokeAsync(cts.Token);
+        return await config.Parse(args).InvokeAsync(cts.Token);
     }
 
     private static Command GetInspectCommand()
