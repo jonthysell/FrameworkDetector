@@ -45,7 +45,7 @@ For more information on the differences, see [NET implementations](https://learn
 
 The following module should be loaded by the running process:
 
-1. `Avalonia.Base.dll` (or the Ngened[^1] `System.Windows.Forms.ni.dll`)
+1. `Avalonia.Base.dll` (or the Ngened[^1] `Avalonia.Base.ni.dll`)
 
 The specific version of Avalonia can be gotten by checking the FileVersion of the loaded module.
 
