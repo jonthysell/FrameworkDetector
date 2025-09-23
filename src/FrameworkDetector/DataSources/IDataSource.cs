@@ -13,7 +13,7 @@ public interface IDataSource
     /// Gets the Id of the category/type of this data source (e.g. all Process data sources will have the same Id, compared to those that comes from File/disk, etc...)
     /// This can be used by checks that care about that type of data source to gather from the <see cref="DataSourceCollection"/>.
     /// </summary>
-    static virtual Guid Id { get; } = Guid.Empty;
+    static virtual string Id { get; } = "";
 
     //// TODO: If we use source generators for this setup/registry then this probably gets simpler.
     //// In the SG case, we probably need a parent class which represents the data source type, then we could
@@ -22,7 +22,7 @@ public interface IDataSource
     /// Gets the static Id of the type of data source this is.
     /// </summary>
     /// <returns></returns>
-    Guid GetId();
+    string GetId();
 
     /// <summary>
     /// The cached data that can be serialized to output.

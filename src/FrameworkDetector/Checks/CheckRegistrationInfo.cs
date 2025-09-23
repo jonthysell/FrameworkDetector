@@ -25,7 +25,7 @@ namespace FrameworkDetector.Checks;
 public record CheckRegistrationInfo<TInput,TOutput>(
     string Name,
     string Description,
-    Guid[] DataSourceIds,
+    string[] DataSourceIds,
     CheckFunction<TInput,TOutput> PerformCheckAsync
 ) where TInput : struct
   where TOutput : struct

@@ -20,7 +20,7 @@ public record ToolRunResult
 
     public string Timestamp { get; }
 
-    public Dictionary<Guid, List<object?>?> DataSources { get; } 
+    public Dictionary<string, List<object?>?> DataSources { get; } 
 
     public List<DetectorResult> DetectorResults { get; set; } = [];
 
@@ -30,7 +30,7 @@ public record ToolRunResult
         ToolVersion = toolVersion;
         Timestamp = DateTime.UtcNow.ToString("O");
 
-        DataSources = new Dictionary<Guid, List<object?>?>();
+        DataSources = new Dictionary<string, List<object?>?>();
     }
 
     public void AddDataSources(DataSourceCollection sources)

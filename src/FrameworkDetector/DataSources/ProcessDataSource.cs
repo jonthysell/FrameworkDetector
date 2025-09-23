@@ -12,9 +12,9 @@ namespace FrameworkDetector.DataSources;
 
 public class ProcessDataSource : IDataSource
 {
-    public static Guid Id => new Guid("9C719E0C-2E53-4379-B2F5-C90F47E6C730");
+    public static string Id => "processes";
 
-    public Guid GetId() => Id; //// Passthru
+    public string GetId() => Id; //// Passthru
 
     public object? Data => ProcessMetadata;
 

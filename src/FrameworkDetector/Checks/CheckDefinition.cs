@@ -23,7 +23,7 @@ public interface ICheckDefinition
     /// <summary>
     /// Gets the list of required datasources this check expects to access to be able to run.
     /// </summary>
-    public Guid[] DataSourceIds { get; }
+    public string[] DataSourceIds { get; }
 
     /// <summary>
     /// Gets the description to be used as a ToString format with the ProcessMetadata.ToString() as a parameter.
@@ -77,7 +77,7 @@ public record CheckDefinition<TInput,TOutput>(
     public string Description => CheckRegistration.Description;
 
     /// <inheritdoc/>
-    public Guid[] DataSourceIds => CheckRegistration.DataSourceIds;
+    public string[] DataSourceIds => CheckRegistration.DataSourceIds;
 
     private CheckFunction<TInput,TOutput> PerformCheckAsync => CheckRegistration.PerformCheckAsync;
 

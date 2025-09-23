@@ -12,7 +12,7 @@ namespace FrameworkDetector.DataSources;
 /// <summary>
 /// A grouped collection of <see cref="IDataSource"/> by <see cref="IDataSource.Id"/>, used for live lookup of datasources added after initialization.
 /// </summary>
-public class DataSourceCollection : ReadOnlyDictionary<Guid, IDataSource[]>, IReadOnlyCollection<IDataSource[]>
+public class DataSourceCollection : ReadOnlyDictionary<string, IDataSource[]>, IReadOnlyCollection<IDataSource[]>
 {
     // Take in a collection of data sources and group by common id (e.g. if an app has multiple processes)
     public DataSourceCollection(IDataSource[] list) 
@@ -29,7 +29,7 @@ public class DataSourceCollection : ReadOnlyDictionary<Guid, IDataSource[]>, IRe
     /// <param name="key"></param>
     /// <param name="sources">array of sources of the specified type, or empty array.</param>
     /// <returns>True if successful.</returns>
-    public bool TryGetSources<T>(Guid sourceIdType, out T[] sources)
+    public bool TryGetSources<T>(string sourceIdType, out T[] sources)
         where T : IDataSource
     {
         if (TryGetValue(sourceIdType, out IDataSource[]? innerSources))
