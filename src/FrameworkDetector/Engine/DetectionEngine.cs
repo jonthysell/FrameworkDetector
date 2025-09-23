@@ -133,8 +133,7 @@ public class DetectionEngine
                     // then says if that particular bucket was fully satisfied? This needs a bit more definition about what we want to use these for... (though I think even if we change this up this new API setup is pretty flexible to reconfigure to whatever our needs are).
                 }
 
-                // TODO: We need to mark cancelled status somewhere?
-                detectorResult.DetectorStatus = DetectorStatus.Completed;
+                detectorResult.DetectorStatus = cancellationToken.IsCancellationRequested ? DetectorStatus.Canceled: DetectorStatus.Completed;
 
                 // Add to main collection of results.
                 allDetectorResults.Add(detectorResult);
