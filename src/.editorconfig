@@ -1,8 +1,6 @@
 # Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
 
-file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the MIT License.
-
 # C# files
 [*.cs]
 
@@ -31,8 +29,8 @@ dotnet_search_reference_assemblies = true
 
 # Organize usings
 dotnet_separate_import_directive_groups = false
-dotnet_sort_system_directives_first = false
-file_header_template = unset
+dotnet_sort_system_directives_first = true
+file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the MIT License.
 
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false
