@@ -27,6 +27,7 @@ public partial class CliApp
         var rootCommand = new RootCommand("Framework Detector")
         {
             GetInspectCommand(),
+            GetRunCommand(),
         };
 
         var config = new CommandLineConfiguration(rootCommand);
@@ -115,6 +116,16 @@ public partial class CliApp
         Console.ForegroundColor = ConsoleColor.Red;
 
         Console.Error.WriteLine("error: " + format, args);
+
+        Console.ForegroundColor = oldColor;
+    }
+
+    private void PrintInfo(string format, params object[] args)
+    {
+        ConsoleColor oldColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Cyan;
+
+        Console.Out.WriteLine("info: " + format, args);
 
         Console.ForegroundColor = oldColor;
     }

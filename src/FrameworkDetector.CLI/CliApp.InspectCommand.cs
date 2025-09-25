@@ -20,6 +20,10 @@ namespace FrameworkDetector.CLI;
 
 public partial class CliApp
 {
+    /// <summary>
+    /// A command which inspects a single running process on the system.
+    /// </summary>
+    /// <returns><see cref="Command"/></returns>
     private Command GetInspectCommand()
     {
         Option<int?> pidOption = new("--processId", "--pid")
