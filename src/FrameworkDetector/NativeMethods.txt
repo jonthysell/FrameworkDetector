@@ -1,5 +1,6 @@
 EnumChildWindows
 EnumWindows
+GetApplicationUserModelId
 GetClassName
 GetShellWindow
 GetWindowText

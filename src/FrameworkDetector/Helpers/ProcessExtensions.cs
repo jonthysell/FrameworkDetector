@@ -8,6 +8,7 @@ using System.Linq;
 
 using System.Management;
 using System.Runtime.InteropServices;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 
 namespace FrameworkDetector;
@@ -90,34 +91,20 @@ public static class ProcessExtensions
 
     public static bool TryGetApplicationUserModelId(this Process process, out string? applicationUserModelId)
     {
-        unsafe
+        uint length = 0;
+
+        if (WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER == PInvoke.GetApplicationUserModelId(process.SafeHandle, ref length, null) && length > 0)
         {
-            int len = 0;
-            if (NativeMethods.ERROR_INSUFFICIENT_BUFFER != NativeMethods.GetApplicationUserModelId(process.Handle, ref len, IntPtr.Zero))
+            var buffer = new char[length];
+            if (WIN32_ERROR.ERROR_SUCCESS == PInvoke.GetApplicationUserModelId(process.SafeHandle, ref length, buffer))
             {
-                applicationUserModelId = default;
-                return false;
-            }
-
-            IntPtr buffer = Marshal.AllocHGlobal(len);
-
-            try
-            {
-                if (NativeMethods.ERROR_SUCCESS != NativeMethods.GetApplicationUserModelId(process.Handle, ref len, buffer))
-                {
-                    applicationUserModelId = default;
-                    return false;
-                }
-
-                applicationUserModelId = Marshal.PtrToStringUni(buffer);
+                applicationUserModelId = new string(buffer, 0, (int)length - 1);
                 return true;
-
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(buffer);
             }
         }
+
+        applicationUserModelId = default;
+        return false;
     }
 
     public static IEnumerable<ProcessWindowMetadata> GetActiveWindowMetadata(this Process process)
@@ -227,7 +214,4 @@ internal partial class NativeMethods
 
     [DllImport("kernel32.dll")]
     public static extern int GetPackageId(IntPtr hProcess, ref int bufferLength, IntPtr pBuffer);
-
-    [DllImport("kernel32.dll")]
-    public static extern int GetApplicationUserModelId(IntPtr hProcess, ref int applicationUserModelIdLength, IntPtr applicationUserModelId);
 }
