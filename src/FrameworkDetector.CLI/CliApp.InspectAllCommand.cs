@@ -11,6 +11,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 
 using FrameworkDetector.Engine;
+using FrameworkDetector.Models;
 
 namespace FrameworkDetector.CLI;
 
@@ -27,8 +28,24 @@ public partial class CliApp
             Description = "Save the inspection reports as JSON to the given folder name. Each file will be named by the process id.",
         };
 
+        Option<string?> outputFileTemplateOption = new("--outputFileTemplate")
+        {
+            Description = 
+                """
+                The output file template, default is '{appName}.json'.
+
+                Supported tokens:
+                    {appName}            - The package full name (if available) otherwise the process name
+                    {packageFullName}    - The package full name (if available)
+                    {processId}          - The process ID
+                    {processName}        - The process name
+                    {version}            - The version of the tool
+                """,
+            
+        };
+
         // See: https://learn.microsoft.com/dotnet/api/system.diagnostics.process.mainwindowhandle
-        Option<bool?> filterWindowProcesses = new("--filterWindowProcesses")
+        Option<bool?> filterWindowProcessesOption = new("--filterWindowProcesses")
         {
             Description = "Filters processes by those that are more likely to be applications with a MainWindowHandle. Default is true.",
         };
@@ -45,8 +62,9 @@ public partial class CliApp
 
         var command = new Command("all", "Inspect all running processes")
         {
-            filterWindowProcesses,
+            filterWindowProcessesOption,
             includeChildrenOption,
+            outputFileTemplateOption,
             outputFolderOption,
             verboseOption,
         };
@@ -65,9 +83,10 @@ public partial class CliApp
                 return (int)ExitCode.ArgumentParsingError;
             }
 
+            var outputFileTemplate = parseResult.GetValue(outputFileTemplateOption);
             var outputFolderName = parseResult.GetValue(outputFolderOption);
             var verbose = parseResult.GetValue(verboseOption);
-            var filterProcesses = parseResult.GetValue(filterWindowProcesses) ?? true;
+            var filterProcesses = parseResult.GetValue(filterWindowProcessesOption) ?? true;
             var includeChildren = parseResult.GetValue(includeChildrenOption);
 
             // Create output folder (if specified) for output
@@ -111,7 +130,7 @@ public partial class CliApp
             int fails = 0;
             foreach (var process in processesToInspect)
             {
-                string? outputFilename = string.IsNullOrEmpty(outputFolderName) ? null : Path.Combine(outputFolderName, $"{process.ProcessName}_{process.Id}.json");
+                string? outputFilename = string.IsNullOrEmpty(outputFolderName) ? null : Path.Combine(outputFolderName, FormatFileName(process, outputFileTemplate));
                 PrintInfo("Inspecting process {0}({1}) {2:00.0}%", process.ProcessName, process.Id, 100.0 * count++ / processesToInspect.Count);
                 if (!await InspectProcessAsync(process, includeChildren, verbose, outputFilename, cancellationToken))
                 {
@@ -136,5 +155,19 @@ public partial class CliApp
         });
 
         return command;
+    }
+
+    private string FormatFileName(Process process, string? outputFileTemplate)
+    {
+        outputFileTemplate ??= "{appName}.json";
+
+        bool hasPackageName = process.TryGetPackageFullName(out string? packageFullName);
+
+        return outputFileTemplate
+            .Replace("{processId}", process.Id.ToString())
+            .Replace("{processName}", process.ProcessName)
+            .Replace("{packageFullName}", packageFullName)
+            .Replace("{appName}", hasPackageName ? packageFullName : process.ProcessName)
+            .Replace("{version}", AssemblyInfo.ToolVersion);
     }
 }
