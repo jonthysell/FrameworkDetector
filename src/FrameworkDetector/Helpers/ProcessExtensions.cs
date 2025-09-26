@@ -50,43 +50,22 @@ public static class ProcessExtensions
 
     public static bool TryGetPackageFullName(this Process process, out string? packageFullName)
     {
-        NativeMethods.PACKAGE_ID PackageId;
-        unsafe
+        if (OperatingSystem.IsWindowsVersionAtLeast(8))
         {
-            int len = 0;
-            if (NativeMethods.ERROR_INSUFFICIENT_BUFFER != NativeMethods.GetPackageId(process.Handle, ref len, IntPtr.Zero))
+            uint length = 0;
+            if (WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER == PInvoke.GetPackageFullName(process.SafeHandle, ref length, null) && length > 0)
             {
-                packageFullName = default;
-                return false;
-            }
-
-            IntPtr buffer = Marshal.AllocHGlobal(len);
-
-            try
-            {
-                if (NativeMethods.ERROR_SUCCESS != NativeMethods.GetPackageId(process.Handle, ref len, buffer))
+                var buffer = new char[length];
+                if (WIN32_ERROR.ERROR_SUCCESS == PInvoke.GetPackageFullName(process.SafeHandle, ref length, buffer))
                 {
-                    packageFullName = default;
-                    return false;
+                    packageFullName = new string(buffer, 0, (int)length - 1);
+                    return true;
                 }
-
-                PackageId = Marshal.PtrToStructure<NativeMethods.PACKAGE_ID>(buffer);
-
-                packageFullName = string.Join("_",
-                                              Marshal.PtrToStringUni(PackageId.Name),
-                                              string.Join(".", PackageId.Version.Major, PackageId.Version.Minor, PackageId.Version.Build, PackageId.Version.Revision),
-                                              PackageId.ProcessorArchitecture.ToString(),
-                                              Marshal.PtrToStringUni(PackageId.ResourceId),
-                                              Marshal.PtrToStringUni(PackageId.PublisherId)
-                                             );
-                return true;
-
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(buffer);
             }
         }
+
+        packageFullName = default;
+        return false;
     }
 
     public static bool TryGetApplicationUserModelId(this Process process, out string? applicationUserModelId)
@@ -176,42 +155,3 @@ public static class ProcessExtensions
 }
 
 public record ProcessWindowMetadata(string? ClassName, string? Text, bool? IsVisible) { }
-
-internal partial class NativeMethods
-{
-    [StructLayout(LayoutKind.Sequential)]
-    public struct PACKAGE_VERSION
-    {
-        public ushort Revision;
-        public ushort Build;
-        public ushort Minor;
-        public ushort Major;
-    }
-
-    public enum ProcessorArchitecture : uint
-    {
-        x86 = 0,
-        arm = 5,
-        x64 = 9,
-        neutral = 11,
-        arm64 = 12
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct PACKAGE_ID
-    {
-        public uint Reserved;
-        public ProcessorArchitecture ProcessorArchitecture;
-        public PACKAGE_VERSION Version;
-        public IntPtr Name;
-        public IntPtr Publisher;
-        public IntPtr ResourceId;
-        public IntPtr PublisherId;
-    }
-
-    public const int ERROR_SUCCESS = 0;
-    public const int ERROR_INSUFFICIENT_BUFFER = 122;
-
-    [DllImport("kernel32.dll")]
-    public static extern int GetPackageId(IntPtr hProcess, ref int bufferLength, IntPtr pBuffer);
-}
