@@ -31,6 +31,14 @@ dotnet run [parameters]
 
 ## Usage
 
+### Inspect all Processes
+
+By default, filters to processes which have a Main Window Handle.
+
+```ps
+FrameworkDetector.CLI.exe all
+```
+
 ### Inspect by Process Id (PID)
 
 ```ps
@@ -48,6 +56,22 @@ FrameworkDetector.CLI.exe inspect --pid ###
 ```ps
 FrameworkDetector.CLI.exe inspect --processName ###
 ```
+
+### Run a Process and Inspect it
+
+```ps
+FrameworkDetector.CLI.exe run --exe "C:\Path\To\MyApp.exe"
+```
+
+*OR*
+
+Use a full package name, like for the WinUI 3 Gallery:
+
+```ps
+FrameworkDetector.CLI.exe run --pkg Microsoft.WinUI3ControlsGallery_2.7.0.0_x64__8wekyb3d8bbwe
+```
+
+You can use the PowerShell `Get-AppxPackage` command to find the full package name of installed MSIX packages.
 
 ## Project Structure
 

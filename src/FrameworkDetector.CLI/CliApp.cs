@@ -39,6 +39,7 @@ public partial class CliApp
 
         var rootCommand = new RootCommand("Framework Detector")
         {
+            GetInspectAllCommand(),
             GetInspectCommand(),
             GetRunCommand(),
         };
