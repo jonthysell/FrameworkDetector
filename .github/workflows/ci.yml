@@ -18,8 +18,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
+
+    - name: Test FrameworkDetector
+      run: ./scripts/test.ps1
         
-    - name: Build FrameworkDetector.CLI
+    - name: Build FrameworkDetector.CLI Binaries
       run: ./scripts/build.ps1
       
     - name: Upload Build Artifacts

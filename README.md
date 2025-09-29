@@ -29,6 +29,20 @@ You can also navigate to the `src\FrameworkDetector.CLI` folder and use the dotn
 dotnet run [parameters]
 ```
 
+## Test
+
+Use the test script to run all tests:
+
+```ps
+scripts\test.ps1
+```
+
+Otherwise you can manually test in Visual Studio or on the command-line:
+
+```ps
+dotnet test ./src/FrameworkDetector.sln
+```
+
 ## Usage
 
 ### Inspect all Processes
