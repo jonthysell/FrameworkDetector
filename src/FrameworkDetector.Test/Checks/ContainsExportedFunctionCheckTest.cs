@@ -31,7 +31,7 @@ public class ContainsExportedFunctionCheckTest() : CheckTestBase<ContainsExporte
 
     [TestMethod]
     [DataRow("", "?TestFunctionName@Type@TestModule@@YA_NXZ")]
-    [DataRow("?TestFunctionName@Type@TestModule@@YA_NXZ", "?TestFunctionName2@Type@TestModule@@YA_NXZ")]
+    [DataRow("?TestFunctionName@Type@TestModule@@YA_NXZ", "?WrongFunctionName@Type@TestModule@@YA_NXZ")]
     public async Task ContainsExportedFunctionCheck_FunctionNameNotFoundTest(string actualFunctionName, string functionNameToCheck)
     {
         await RunFunctionNameCheck([actualFunctionName], functionNameToCheck, DetectorCheckStatus.CompletedFailed, null);
