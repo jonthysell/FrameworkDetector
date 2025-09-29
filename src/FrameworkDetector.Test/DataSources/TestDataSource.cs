@@ -21,5 +21,5 @@ public abstract class TestDataSource<TData>(string Id, TData? TypedData) : IData
 
 public class TestProcessDataSource(ProcessMetadata? processes) : TestDataSource<ProcessMetadata>(ProcessDataSource.Id, processes), IProcessDataSource
 {
-    public ProcessMetadata? ProcessMetadata => processes;
+    public ProcessMetadata? ProcessMetadata => Data as ProcessMetadata;
 }
