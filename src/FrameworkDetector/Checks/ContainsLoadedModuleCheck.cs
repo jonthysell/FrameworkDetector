@@ -23,7 +23,7 @@ public static class ContainsLoadedModuleCheck
     /// <summary>
     /// Get registration information defining <see cref="ContainsLoadedModuleCheck"/>.
     /// </summary>
-    private static CheckRegistrationInfo<ContainsLoadedModuleArgs, ContainsLoadedModuleData> GetCheckRegistrationInfo(ContainsLoadedModuleArgs args)
+    internal static CheckRegistrationInfo<ContainsLoadedModuleArgs, ContainsLoadedModuleData> GetCheckRegistrationInfo(ContainsLoadedModuleArgs args)
     {
         return new(
             Name: nameof(ContainsLoadedModuleCheck),
@@ -41,7 +41,7 @@ public static class ContainsLoadedModuleCheck
     /// <param name="productName">A loaded module's product name must match this text, if specified.</param>
     /// <param name="productVersionRange">A loaded module's product version must match this semver version range sepc, if specified.</param>
     /// <param name="checkForNgenModule">Whether or not to also match NGENed versions (.ni.dll) of the specified filename and/or original filename.</param>
-    public readonly struct ContainsLoadedModuleArgs(string? filename, string? originalFilename, string? fileVersionRange, string? productName, string? productVersionRange, bool? checkForNgenModule) : ICheckArgs
+    public readonly struct ContainsLoadedModuleArgs(string? filename = null, string? originalFilename = null, string? fileVersionRange = null, string? productName = null, string? productVersionRange = null, bool? checkForNgenModule = null) : ICheckArgs
     {
         public string? Filename { get; } = filename;
 
