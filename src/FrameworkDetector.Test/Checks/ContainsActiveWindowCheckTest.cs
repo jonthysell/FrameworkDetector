@@ -19,9 +19,13 @@ public class ContainsActiveWindowCheckTest() : CheckTestBase<ContainsActiveWindo
     [TestMethod]
     [DataRow("")]
     [DataRow("TestWindowClassName")]
-    public async Task ContainsActiveWindowCheck_WindowClassFoundTest(string className)
+    [DataRow("TestWindowClassFullName", "")]
+    [DataRow("TestWindowClassFullName", "TestWindowClass")]
+    [DataRow("TestWindowClassFullName", "WindowClassFull")]
+    [DataRow("TestWindowClassFullName", "ClassFullName")]
+    public async Task ContainsActiveWindowCheck_WindowClassFoundTest(string className, string? classNameToCheck = null)
     {
-        await RunWindowClassTest([className], className, DetectorCheckStatus.CompletedPassed, className);
+        await RunWindowClassTest([className], classNameToCheck ?? className, DetectorCheckStatus.CompletedPassed, className);
     }
 
     [TestMethod]
