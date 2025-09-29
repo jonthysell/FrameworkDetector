@@ -158,7 +158,7 @@ public static class ContainsLoadedModuleCheck
 
     public static async Task PerformCheckAsync(CheckDefinition<ContainsLoadedModuleArgs, ContainsLoadedModuleData> definition, DataSourceCollection dataSources, DetectorCheckResult<ContainsLoadedModuleArgs, ContainsLoadedModuleData> result, CancellationToken cancellationToken)
     {
-        if (dataSources.TryGetSources(ProcessDataSource.Id, out ProcessDataSource[] processes))
+        if (dataSources.TryGetSources(ProcessDataSource.Id, out IProcessDataSource[] processes))
         {
             result.CheckStatus = DetectorCheckStatus.InProgress;
 

@@ -19,7 +19,7 @@ public static class ContainsActiveWindowCheck
     /// <summary>
     /// Get registration information defining <see cref="ContainsActiveWindowCheck"/>.
     /// </summary>
-    private static CheckRegistrationInfo<ContainsActiveWindowArgs, ContainsActiveWindowData> GetCheckRegistrationInfo(ContainsActiveWindowArgs args)
+    internal static CheckRegistrationInfo<ContainsActiveWindowArgs, ContainsActiveWindowData> GetCheckRegistrationInfo(ContainsActiveWindowArgs args)
     {
         return new(
             Name: nameof(ContainsActiveWindowCheck),
@@ -34,7 +34,7 @@ public static class ContainsActiveWindowCheck
     /// </summary>
     /// <param name="className">An active window's class name must contain this text, if specified.</param>
     /// <param name="text">An active window's text (title or caption) must contain this text, if specified.</param>
-    public readonly struct ContainsActiveWindowArgs(string? className, string? text) : ICheckArgs
+    public readonly struct ContainsActiveWindowArgs(string? className = null, string? text = null) : ICheckArgs
     {
         public string? ClassName { get; } = className;
 
@@ -100,7 +100,7 @@ public static class ContainsActiveWindowCheck
 
     public static async Task PerformCheckAsync(CheckDefinition<ContainsActiveWindowArgs, ContainsActiveWindowData> definition, DataSourceCollection dataSources, DetectorCheckResult<ContainsActiveWindowArgs, ContainsActiveWindowData> result, CancellationToken cancellationToken)
     {
-        if (dataSources.TryGetSources(ProcessDataSource.Id, out ProcessDataSource[] processes))
+        if (dataSources.TryGetSources(ProcessDataSource.Id, out IProcessDataSource[] processes))
         {
             result.CheckStatus = DetectorCheckStatus.InProgress;
 

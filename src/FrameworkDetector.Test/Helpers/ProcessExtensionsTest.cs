@@ -2,10 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace FrameworkDetector.Test;
+namespace FrameworkDetector.Test.Helpers;
 
 [TestClass]
 public class ProcessExtensionsTest

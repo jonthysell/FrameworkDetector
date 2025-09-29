@@ -10,7 +10,12 @@ using FrameworkDetector.Models;
 
 namespace FrameworkDetector.DataSources;
 
-public class ProcessDataSource : IDataSource
+public interface IProcessDataSource : IDataSource
+{
+    ProcessMetadata? ProcessMetadata { get; }
+}
+
+public class ProcessDataSource : IProcessDataSource
 {
     public static string Id => "processes";
 

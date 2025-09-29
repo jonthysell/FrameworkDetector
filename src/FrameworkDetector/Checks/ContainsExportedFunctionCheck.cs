@@ -87,7 +87,7 @@ public static class ContainsExportedFunctionCheck
 
     public static async Task PerformCheckAsync(CheckDefinition<ContainsExportedFunctionArgs, ContainsExportedFunctionData> definition, DataSourceCollection dataSources, DetectorCheckResult<ContainsExportedFunctionArgs, ContainsExportedFunctionData> result, CancellationToken cancellationToken)
     {
-        if (dataSources.TryGetSources(ProcessDataSource.Id, out ProcessDataSource[] processes))
+        if (dataSources.TryGetSources(ProcessDataSource.Id, out IProcessDataSource[] processes))
         {
             result.CheckStatus = DetectorCheckStatus.InProgress;
 

@@ -12,17 +12,17 @@ using System.Threading.Tasks;
 namespace FrameworkDetector.Models;
 
 public record ProcessMetadata(string Filename,
-                              string? OriginalFilename,
-                              string? FileVersion,
-                              string? ProductName,
-                              string? ProductVersion,
-                              int? ProcessId,
-                              string? PackageFullName,
-                              string? ApplicationUserModelId,
-                              WindowsBinaryMetadata[]? LoadedModules,
-                              ProcessWindowMetadata[]? ActiveWindows,
-                              ProcessImportedFunctionsMetadata[]? ImportedFunctions,
-                              ProcessExportedFunctionsMetadata[]? ExportedFunctions) : WindowsBinaryMetadata(Filename, OriginalFilename, FileVersion, ProductName, ProductVersion)
+                              string? OriginalFilename = null,
+                              string? FileVersion = null,
+                              string? ProductName = null,
+                              string? ProductVersion = null,
+                              int? ProcessId = null,
+                              string? PackageFullName = null,
+                              string? ApplicationUserModelId = null,
+                              WindowsBinaryMetadata[]? LoadedModules = null,
+                              ProcessWindowMetadata[]? ActiveWindows = null,
+                              ProcessImportedFunctionsMetadata[]? ImportedFunctions = null,
+                              ProcessExportedFunctionsMetadata[]? ExportedFunctions = null) : WindowsBinaryMetadata(Filename, OriginalFilename, FileVersion, ProductName, ProductVersion)
 {
 
     public static async Task<ProcessMetadata?> GetMetadataAsync(Process process, CancellationToken cancellationToken)

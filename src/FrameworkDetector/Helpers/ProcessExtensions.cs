@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 
 using System.Management;
-using System.Runtime.InteropServices;
+
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -262,10 +262,10 @@ public static class ProcessExtensions
     private static readonly ConcurrentDictionary<string, PeFile?> _cachedPeFiles = new ConcurrentDictionary<string, PeFile?>();
 }
 
-public record ProcessWindowMetadata(string? ClassName, string? Text, bool? IsVisible) { }
+public record ProcessWindowMetadata(string? ClassName = null, string? Text = null, bool? IsVisible = null) { }
 
-public record ProcessFunctionMetadata(string Name, bool? DelayLoaded);
+public record ProcessFunctionMetadata(string Name, bool? DelayLoaded = null);
 
-public record ProcessImportedFunctionsMetadata(string ModuleName, ProcessFunctionMetadata[]? Functions) { }
+public record ProcessImportedFunctionsMetadata(string ModuleName, ProcessFunctionMetadata[]? Functions = null) { }
 
-public record ProcessExportedFunctionsMetadata(string Name) : ProcessFunctionMetadata(Name, null);
+public record ProcessExportedFunctionsMetadata(string Name) : ProcessFunctionMetadata(Name);
