@@ -26,7 +26,7 @@ public partial class CliApp
     /// <returns><see cref="Command"/></returns>
     private Command GetInspectCommand()
     {
-        Option<int?> pidOption = new("--processId", "--pid")
+        Option<int?> pidOption = new("--processId", "-pid")
         {
             Description = "The PID of the process to inspect.",
         };
@@ -36,7 +36,7 @@ public partial class CliApp
             Description = "The name of the process to inspect.",
         };
 
-        Option<string?> outputFileOption = new("--outputFile")
+        Option<string?> outputFileOption = new("--outputFile", "-o")
         {
             Description = "Save the inspection report as JSON to the given filename.",
         };
@@ -46,18 +46,12 @@ public partial class CliApp
             Description = "Include the children processes of an inspected process.",
         };
 
-        Option<bool> verboseOption = new("--verbose", "--v")
-        {
-            Description = "Print verbose output.",
-        };
-
         var command = new Command("inspect", "Inspect a given process")
         {
             pidOption,
             processNameOption,
             includeChildrenOption,
             outputFileOption,
-            verboseOption,
         };
         command.TreatUnmatchedTokensAsErrors = true;
 
@@ -77,12 +71,11 @@ public partial class CliApp
             var processId = parseResult.GetValue(pidOption);
             var processName = parseResult.GetValue(processNameOption);
             var outputFilename = parseResult.GetValue(outputFileOption);
-            var verbose = parseResult.GetValue(verboseOption);
             var includeChildren = parseResult.GetValue(includeChildrenOption);
 
             if (processId is not null)
             {
-                if (await InspectProcessAsync(Process.GetProcessById(processId.Value), includeChildren, verbose, outputFilename, cancellationToken))
+                if (await InspectProcessAsync(Process.GetProcessById(processId.Value), includeChildren, outputFilename, cancellationToken))
                 {
                     return (int)ExitCode.Success;
                 }
@@ -109,7 +102,7 @@ public partial class CliApp
                     if (processes.TryGetRootProcess(out var rootProcess) && rootProcess is not null)
                     {
                         PrintWarning("Determined root process {0}({1}).\n", rootProcess.ProcessName, rootProcess.Id);
-                        if (await InspectProcessAsync(rootProcess, includeChildren, verbose, outputFilename, cancellationToken))
+                        if (await InspectProcessAsync(rootProcess, includeChildren, outputFilename, cancellationToken))
                         {
                             return (int)ExitCode.Success;
                         }
@@ -117,7 +110,7 @@ public partial class CliApp
 
                     PrintError("Please run again with the PID of the specific process you wish to inspect.");
                 }
-                else if (await InspectProcessAsync(processes[0], includeChildren, verbose, outputFilename, cancellationToken))
+                else if (await InspectProcessAsync(processes[0], includeChildren, outputFilename, cancellationToken))
                 {
                     return (int)ExitCode.Success;
                 }
@@ -135,11 +128,14 @@ public partial class CliApp
     }
 
     /// Encapsulation of initializing datasource and grabbing engine reference to kick-off a detection against all registered detectors (see ConfigureServices)
-    private async Task<bool> InspectProcessAsync(Process process, bool includeChildren, bool verbose, string? outputFilename, CancellationToken cancellationToken)
+    private async Task<bool> InspectProcessAsync(Process process, bool includeChildren, string? outputFilename, CancellationToken cancellationToken)
     {
         // TODO: Probably have this elsewhere to be called
         var message = $"Inspecting process {process.ProcessName}({process.Id}){(includeChildren ? " (and children)" : "")}";
-        Console.Write($"{message}:");
+        if (Verbosity > VerbosityLevel.Quiet)
+        {
+            Console.Write($"{message}:");
+        }
 
         var processDataSources = new List<ProcessDataSource>() { new ProcessDataSource(process) };
         if (includeChildren)
@@ -152,7 +148,10 @@ public partial class CliApp
         DetectionEngine engine = Services.GetRequiredService<DetectionEngine>();
         engine.DetectionProgressChanged += (s, e) =>
         {
-            Console.Write($"\r{message}: {e.Progress:000.0}%");
+            if (Verbosity > VerbosityLevel.Quiet)
+            {
+                Console.Write($"\r{message}: {e.Progress:000.0}%");
+            }
         };
 
         ToolRunResult result = await engine.DetectAgainstSourcesAsync(sources, cancellationToken);
@@ -165,7 +164,7 @@ public partial class CliApp
             Console.WriteLine();
         }
 
-        PrintResult(result, verbose);
+        PrintResult(result);
 
         TrySaveOutput(result, outputFilename);
 

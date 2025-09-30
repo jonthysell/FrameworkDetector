@@ -23,7 +23,7 @@ public partial class CliApp
     /// <returns><see cref="Command"/></returns>
     private Command GetInspectAllCommand()
     {
-        Option<string?> outputFolderOption = new("--outputFolder")
+        Option<string?> outputFolderOption = new("--outputFolder", "-o")
         {
             Description = "Save the inspection reports as JSON to the given folder name. Each file will be named by the process id.",
         };
@@ -55,18 +55,12 @@ public partial class CliApp
             Description = "Include the children processes of an inspected process.",
         };
 
-        Option<bool> verboseOption = new("--verbose", "--v")
-        {
-            Description = "Print verbose output.",
-        };
-
         var command = new Command("all", "Inspect all running processes")
         {
             filterWindowProcessesOption,
             includeChildrenOption,
             outputFileTemplateOption,
-            outputFolderOption,
-            verboseOption,
+            outputFolderOption
         };
         command.TreatUnmatchedTokensAsErrors = true;
 
@@ -85,7 +79,6 @@ public partial class CliApp
 
             var outputFileTemplate = parseResult.GetValue(outputFileTemplateOption);
             var outputFolderName = parseResult.GetValue(outputFolderOption);
-            var verbose = parseResult.GetValue(verboseOption);
             var filterProcesses = parseResult.GetValue(filterWindowProcessesOption) ?? true;
             var includeChildren = parseResult.GetValue(includeChildrenOption);
 
@@ -132,7 +125,7 @@ public partial class CliApp
             {
                 string? outputFilename = string.IsNullOrEmpty(outputFolderName) ? null : Path.Combine(outputFolderName, FormatFileName(process, outputFileTemplate));
                 PrintInfo("Inspecting process {0}({1}) {2:00.0}%", process.ProcessName, process.Id, 100.0 * count++ / processesToInspect.Count);
-                if (!await InspectProcessAsync(process, includeChildren, verbose, outputFilename, cancellationToken))
+                if (!await InspectProcessAsync(process, includeChildren, outputFilename, cancellationToken))
                 {
                     PrintError("Failed to inspect process {0}({1}).", process.ProcessName, process.Id);
                     // Set error, but continue

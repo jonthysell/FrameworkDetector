@@ -23,22 +23,22 @@ public partial class CliApp
     /// <returns><see cref="Command"/></returns>
     private Command GetRunCommand()
     {
-        Option<string?> pathOption = new("--exePath", "--exe")
+        Option<string?> pathOption = new("--exePath", "-exe")
         {
             Description = "The full path of the program to run.",
         };
 
-        Option<string?> packageOption = new("--packageFullName", "--pkg")
+        Option<string?> packageOption = new("--packageFullName", "-pkg")
         {
             Description = "The full name of the package to run. Must be available to the current user (unless process is running as admin).",
         };
 
-        Option<int?> waitTimeOption = new("--waitTime", "--wait")
+        Option<int?> waitTimeOption = new("--waitTime", "-wait")
         {
             Description = "The time in milliseconds to wait after starting the program before inspecting it. Default is 2000.",
         };
 
-        Option<string?> outputFileOption = new("--outputFile")
+        Option<string?> outputFileOption = new("--outputFile", "-o")
         {
             Description = "Save the inspection report as JSON to the given filename.",
         };
@@ -48,11 +48,6 @@ public partial class CliApp
             Description = "Include the children processes of an inspected process.",
         };
 
-        Option<bool> verboseOption = new("--verbose", "--v")
-        {
-            Description = "Print verbose output.",
-        };
-
         var command = new Command("run", "Inspect a process/package provided to run first")
         {
             pathOption,
@@ -60,7 +55,6 @@ public partial class CliApp
             waitTimeOption,
             includeChildrenOption,
             outputFileOption,
-            verboseOption,
         };
         command.TreatUnmatchedTokensAsErrors = true;
 
@@ -81,7 +75,6 @@ public partial class CliApp
             var packageFullName = parseResult.GetValue(packageOption);
             var waitTime = parseResult.GetValue(waitTimeOption) ?? 2000;
             var outputFilename = parseResult.GetValue(outputFileOption);
-            var verbose = parseResult.GetValue(verboseOption);
             var includeChildren = parseResult.GetValue(includeChildrenOption);
 
             if (exepath is not null)
@@ -113,7 +106,7 @@ public partial class CliApp
                     }
 
                     PrintInfo("Inspecting app...");
-                    if (await InspectProcessAsync(process, includeChildren, verbose, outputFilename, cancellationToken))
+                    if (await InspectProcessAsync(process, includeChildren, outputFilename, cancellationToken))
                     {
                         return (int)ExitCode.Success;
                     }
@@ -217,7 +210,7 @@ public partial class CliApp
                     }
 
                     PrintInfo("Inspecting app...");
-                    if (await InspectProcessAsync(targetProcess, includeChildren, verbose, outputFilename, cancellationToken))
+                    if (await InspectProcessAsync(targetProcess, includeChildren, outputFilename, cancellationToken))
                     {
                         return (int)ExitCode.Success;
                     }

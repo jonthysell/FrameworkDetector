@@ -62,7 +62,7 @@ FrameworkDetector.CLI.exe inspect --processId ###
 *OR*
 
 ```ps
-FrameworkDetector.CLI.exe inspect --pid ###
+FrameworkDetector.CLI.exe inspect -pid ###
 ```
 
 ### Inspect by Process Name
@@ -74,7 +74,7 @@ FrameworkDetector.CLI.exe inspect --processName ###
 ### Run a Process and Inspect it
 
 ```ps
-FrameworkDetector.CLI.exe run --exe "C:\Path\To\MyApp.exe"
+FrameworkDetector.CLI.exe run -exe "C:\Path\To\MyApp.exe"
 ```
 
 *OR*
@@ -82,10 +82,22 @@ FrameworkDetector.CLI.exe run --exe "C:\Path\To\MyApp.exe"
 Use a full package name, like for the WinUI 3 Gallery:
 
 ```ps
-FrameworkDetector.CLI.exe run --pkg Microsoft.WinUI3ControlsGallery_2.7.0.0_x64__8wekyb3d8bbwe
+FrameworkDetector.CLI.exe run -pkg Microsoft.WinUI3ControlsGallery_2.7.0.0_x64__8wekyb3d8bbwe
 ```
 
 You can use the PowerShell `Get-AppxPackage` command to find the full package name of installed MSIX packages.
+
+### Verbosity
+
+You can control the verbosity of the output with the `--verbosity` (or `-v`) parameter. Options are:
+
+- `quiet`: Only show errors
+- `minimal`: Show errors and essential information
+- `normal`: Console shows found frameworks only (default when unspecified)
+- `detailed`: Console shows found and unfound frameworks
+- `diagnostic`: Show all information, including verbose diagnostic output of checks in table
+
+If you specify `-v` without a value, it defaults to `diagnostic`.
 
 ## Project Structure
 

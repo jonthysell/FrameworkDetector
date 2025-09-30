@@ -21,6 +21,9 @@ public partial class CliApp
 {
     public bool IsRunningAsAdmin { get; } = CheckIfRunningAsAdmin();
 
+    // Value here represents the default verbosity when the -v option is specified without argument; otherwise it is defined below as normal in the DefaultValueFactory.
+    private VerbosityLevel Verbosity { get; set; } = VerbosityLevel.Diagnostic;
+
     private static bool CheckIfRunningAsAdmin()
     {
         // Check if process running as admin and initialize our property.
@@ -37,8 +40,23 @@ public partial class CliApp
     {
         Console.OutputEncoding = Encoding.UTF8;
 
+        // TODO: Figure out how to accept the various shortnames, not specified in help:
+        // https://learn.microsoft.com/dotnet/standard/commandline/syntax#parse-errors
+        // https://learn.microsoft.com/dotnet/standard/commandline/design-guidance#the---verbosity-option
+        Option<string?> verbosityOption = new("--verbosity", "-v")
+        {
+            Description = "Set the verbosity level of printed output. If no additional value specified after '-v', defaults to 'diagnostic'.",
+            DefaultValueFactory = parseResult => "normal", // Note: Default value for standard running mode
+            Recursive = true, // Note: Makes this a global command when added to the Root Command
+            Arity = ArgumentArity.ZeroOrOne, // Note: Let's us specify -v without a value, uses C# default in that case (default above used when not specified at all)
+        };
+        verbosityOption.AcceptOnlyFromAmong("quiet", "minimal", "normal", "detailed", "diagnostic");
+
         var rootCommand = new RootCommand("Framework Detector")
         {
+            // Global Options (Recursive = true)
+            verbosityOption,
+            // Commands
             GetInspectAllCommand(),
             GetInspectCommand(),
             GetRunCommand(),
@@ -47,18 +65,41 @@ public partial class CliApp
         var config = new CommandLineConfiguration(rootCommand);
         config.EnableDefaultExceptionHandler = false;
 
-        return await config.Parse(args).InvokeAsync(cancellationToken);
+        var result = config.Parse(args);
+        // Note: When "-v" specified without a value we get "null" so our default becomes the default value of the property.
+        var verbosityString = result.GetValue(verbosityOption);
+
+        if (Enum.TryParse(verbosityString, true, out VerbosityLevel verbosity))
+        {
+            Verbosity = verbosity;
+        }
+        else if (!string.IsNullOrWhiteSpace(verbosityString))
+        {
+            PrintError("Invalid verbosity level specified: {0}", verbosityString!);
+            return (int)ExitCode.ArgumentParsingError;
+        }
+
+        PrintInfo("Verbosity set to {0}", Verbosity);
+
+        return await result.InvokeAsync(cancellationToken);
     }
 
-    private void PrintResult(ToolRunResult result, bool verbose)
+    private void PrintResult(ToolRunResult result)
     {
+        if (Verbosity == VerbosityLevel.Quiet)
+        {
+            return;
+        }
+
         var table = new ConsoleTable("Framework",
                                      "Result");
 
         table.Options.EnableCount = false;
         table.MaxWidth = Console.BufferWidth - 10;
 
-        foreach (var detectorResult in result.DetectorResults.OrderByDescending(dr => dr.FrameworkFound).ThenBy(dr => dr.DetectorName))
+        var results = Verbosity > VerbosityLevel.Normal ? result.DetectorResults : result.DetectorResults.Where(dr => dr.FrameworkFound);
+
+        foreach (var detectorResult in results.OrderByDescending(dr => dr.FrameworkFound).ThenBy(dr => dr.DetectorName))
         {
             var detectorResultString = "  🟨";
 
@@ -70,7 +111,7 @@ public partial class CliApp
             table.AddRow(detectorResult.DetectorDescription,
                          detectorResultString);
 
-            if (verbose)
+            if (Verbosity == VerbosityLevel.Diagnostic)
             {
                 foreach (var checkResult in detectorResult.CheckResults)
                 {
@@ -99,7 +140,7 @@ public partial class CliApp
     {
         if (!string.IsNullOrWhiteSpace(outputFilename))
         {
-            Console.WriteLine($"Saving output to: \"{outputFilename}\".");
+            PrintInfo($"Saving output to: \"{0}\".", outputFilename);
 
             using var outputWriter = new StreamWriter(outputFilename);
             outputWriter.WriteLine(result.ToString());
@@ -136,6 +177,11 @@ public partial class CliApp
 
     private void PrintInfo(string format, params object[] args)
     {
+        if (Verbosity == VerbosityLevel.Quiet)
+        {
+            return;
+        }
+
         ConsoleColor oldColor = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Cyan;
 
