@@ -87,6 +87,22 @@ FrameworkDetector.CLI.exe run -pkg Microsoft.WinUI3ControlsGallery_2.7.0.0_x64__
 
 You can use the PowerShell `Get-AppxPackage` command to find the full package name of installed MSIX packages.
 
+### Output
+
+Use the `-o` parameter to specify the output file (or folder for `all`). This will save detailed results in a JSON file format. E.g.
+
+```ps
+FrameworkDetector.CLI.exe inspect -pid ### -o myresults.json
+```
+
+When using the `all` command, a file will be created for each process in the folder specified by the `-o` parameter. You can use the `--outputFileTemplate` parameter to customize the resulting file names.
+
+Use `all --help` to see the available replacement options (case-sensitive).
+
+```ps
+FrameworkDetector.CLI.exe all -o results\ --outputFileTemplate "{processName}_{processId}.json"
+```
+
 ### Verbosity
 
 You can control the verbosity of the output with the `--verbosity` (or `-v`) parameter. Options are:
