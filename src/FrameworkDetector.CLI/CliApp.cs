@@ -140,7 +140,7 @@ public partial class CliApp
     {
         if (!string.IsNullOrWhiteSpace(outputFilename))
         {
-            PrintInfo($"Saving output to: \"{0}\".", outputFilename);
+            PrintInfo("Saving output to: \"{0}\".", outputFilename);
 
             using var outputWriter = new StreamWriter(outputFilename);
             outputWriter.WriteLine(result.ToString());
