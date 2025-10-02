@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using FrameworkDetector.Checks;
@@ -24,13 +24,13 @@ public class DotNetFrameworkDetector : IDetector
     {
         return this.Create()
             .Required("CLR Module", checks => checks
-                .ContainsLoadedModule("clr.dll"))
+                .ContainsLoadedModule("clr.dll", productName: "Microsoft® .NET Framework"))
             // OR
             .Required("mscorlib Module", checks => checks
-                .ContainsLoadedModule("mscorlib.dll", checkForNgenModule: true))
+                .ContainsLoadedModule("mscorlib.dll", productName: "Microsoft® .NET Framework", checkForNgenModule: true))
             .Optional("Extra Modules", checks => checks
-                .ContainsLoadedModule("clrjit.dll")
-                .ContainsLoadedModule("mscorjit.dll"))
+                .ContainsLoadedModule("clrjit.dll", productName: "Microsoft® .NET Framework")
+                .ContainsLoadedModule("mscorjit.dll", productName: "Microsoft® .NET Framework"))
             .BuildDefinition();
     }
 }

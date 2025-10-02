@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using FrameworkDetector.Checks;
@@ -24,9 +24,9 @@ public class DotNetCoreDetector : IDetector
     {
         return this.Create()
             .Required("", checks => checks
-                .ContainsLoadedModule("CoreClr.dll"))
+                .ContainsLoadedModule("CoreClr.dll", productName: "Microsoft® .NET Core"))
             .Optional("Extra Modules", checks => checks
-                .ContainsLoadedModule("clrjit.dll"))
+                .ContainsLoadedModule("clrjit.dll", productName: "Microsoft® .NET Core"))
             .BuildDefinition();
     }
 }
