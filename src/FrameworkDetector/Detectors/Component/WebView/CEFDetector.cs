@@ -6,6 +6,10 @@ using FrameworkDetector.Engine;
 
 namespace FrameworkDetector.Detectors;
 
+/// <summary>
+/// Detector for Chromium Embedded Framework (CEF).
+/// Built according to docs/Component/WebView/CEF.md.
+/// </summary>
 public class CEFDetector : IDetector 
 {
     public string Name => nameof(CEFDetector);
