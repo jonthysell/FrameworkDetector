@@ -6,6 +6,10 @@ using FrameworkDetector.Engine;
 
 namespace FrameworkDetector.Detectors;
 
+/// <summary>
+/// Detector for Microsoft EdgeHTML (WebView1).
+/// Built according to docs/Component/WebView/WebView1.md.
+/// </summary>
 public class WebView1Detector : IDetector 
 {
     public string Name => nameof(WebView1Detector);
@@ -22,7 +26,6 @@ public class WebView1Detector : IDetector
     
     public DetectorDefinition CreateDefinition()
     {
-        // https://learn.microsoft.com/microsoft-edge/webview2/concepts/distribution?tabs=dotnetcsharp#files-to-ship-with-the-app
         return this.Create()
             .Required("", checks => checks
                 .ContainsLoadedModule("edgehtml.dll"))

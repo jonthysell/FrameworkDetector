@@ -6,7 +6,7 @@ Windows Presentation Foundation (WPF) is an open-source, graphical user interfac
 
 WPF is resolution-independent and uses a vector-based rendering engine, built to take advantage of modern graphics hardware. WPF provides a comprehensive set of application-development features that include Extensible Application Markup Language (XAML), controls, data binding, layout, 2D and 3D graphics, animation, styles, templates, documents, media, text, and typography. WPF is part of .NET, so you can build applications that incorporate other elements of the .NET API.
 
-**Website:** [WPF Docs](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
+**Website:** [WPF Docs](https://learn.microsoft.com/en-us/dotnet/desktop/wpf)
 
 ### Languages
 
@@ -64,5 +64,5 @@ For both (framework-dependent) .NET apps and standard .NET Framework apps, which
 
 ## Resources
 
-- [Official Docs](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
-- [GitHub Source](https://github.com/dotnet/wpf)
+- [WPF Docs](https://learn.microsoft.com/en-us/dotnet/desktop/wpf)
+- [WPF GitHub Source](https://github.com/dotnet/wpf)

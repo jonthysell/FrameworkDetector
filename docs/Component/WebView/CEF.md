@@ -2,9 +2,11 @@
 
 ## Summary
 
-The Chromium Embedded Framework (CEF) is a simple framework for embedding Chromium-based browsers in other applications.
+The Chromium Embedded Framework (CEF) is a framework for embedding Chromium-based browsers in other applications.
 
-**Website:** [CEF Site](https://bitbucket.org/chromiumembedded/cef/)
+Developers can use CEF to host their entire app written using web technologies, or as a simple UI component for hosting web content in a native app primarily built with other frameworks.
+
+**Website:** [CEF Website](https://bitbucket.org/chromiumembedded/cef)
 
 ### Languages
 
@@ -18,11 +20,11 @@ Windows, macOS, Linux
 
 ### Dependencies
 
-CEF depends on [Google Chromium](https://www.chromium.org/Home/).
+CEF depends on [Google Chromium](https://chromium.org/Home).
 
 ### Canonical Apps
 
-- [GOG Galaxy](https://www.gog.com/galaxy)
+- [GOG Galaxy](https://gog.com/galaxy)
 - [Steam Client](https://store.steampowered.com/about/download)
 
 ## How to Detect
@@ -43,5 +45,5 @@ It is not possible to definitively determine the use of CEF by an app by detecti
 
 ## Resources
 
-- [Official Site](https://bitbucket.org/chromiumembedded/cef/)
-- [CefSharp](https://github.com/cefsharp/CefSharp)
+- [CEF Website](https://bitbucket.org/chromiumembedded/cef)
+- [CefSharp GitHub Source](https://github.com/cefsharp/CefSharp)

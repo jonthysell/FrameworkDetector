@@ -4,7 +4,7 @@
 
 The MVVM Toolkit is a modern, fast, and modular MVVM library. It is part of the .NET Community Toolkit.
 
-**Website:** [MVVM Toolkit Docs](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
+**Website:** [MVVM Toolkit Docs](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm)
 
 ### Languages
 
@@ -60,5 +60,5 @@ It is not possible to definitively determine the use of the MVVM Toolkit by an a
 
 ## Resources
 
-- [Official Docs](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
-- [GitHub Source](https://github.com/CommunityToolkit/dotnet)
+- [MVVM Toolkit Docs](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm)
+- [Community Toolkit Github Source](https://github.com/CommunityToolkit/dotnet)

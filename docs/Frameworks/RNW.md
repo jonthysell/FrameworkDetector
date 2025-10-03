@@ -6,7 +6,7 @@ React Native for Windows (RNW) enables React Native developers to create native 
 
 React Native is an open-source framework developed by Meta that enables you to build world-class application experiences on native platforms using a consistent developer experience based on JavaScript and React.
 
-**Website:** [RNW Docs](https://microsoft.github.io/react-native-windows/)
+**Website:** [RNW Docs](https://microsoft.github.io/react-native-windows)
 
 ### Languages
 
@@ -24,8 +24,8 @@ React Native for Windows has two parallel implementations: the *Old Architecture
 
 **Old Architecture:**
 
-- [UWP XAML](https://learn.microsoft.com/en-us/windows/uwp/xaml-platform/)
-- [WinUI 2](https://learn.microsoft.com/en-us/windows/uwp/get-started/winui2/)
+- [UWP XAML](https://learn.microsoft.com/en-us/windows/uwp/xaml-platform)
+- [WinUI 2](https://learn.microsoft.com/en-us/windows/uwp/get-started/winui2)
 
 **New Architecture:**
 
@@ -65,7 +65,7 @@ It is not possible to definitively determine the use of RNW by an app by detecti
 
 ## Resources
 
-- [Official Docs](https://microsoft.github.io/react-native-windows/)
-- [GitHub Source](https://github.com/microsoft/react-native-windows)
+- [RNW Docs](https://microsoft.github.io/react-native-windows)
+- [RNW GitHub Source](https://github.com/microsoft/react-native-windows)
 - [New vs. Old Architecture](https://microsoft.github.io/react-native-windows/docs/new-architecture)
 - [Windows OS Compatibility](https://microsoft.github.io/react-native-windows/docs/win10-compat)

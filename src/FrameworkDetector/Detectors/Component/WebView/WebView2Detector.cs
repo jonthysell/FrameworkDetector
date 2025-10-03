@@ -6,6 +6,10 @@ using FrameworkDetector.Engine;
 
 namespace FrameworkDetector.Detectors;
 
+/// <summary>
+/// Detector for Microsoft Edge WebView2 (WebView2).
+/// Built according to docs/Component/WebView/WebView2.md.
+/// </summary>
 public class WebView2Detector : IDetector 
 {
     public string Name => nameof(WebView2Detector);
@@ -29,6 +33,7 @@ public class WebView2Detector : IDetector
             // OR
             .Required("Core Module", checks => checks
                 .ContainsLoadedModule("Microsoft.Web.WebView2.Core.dll"))
+            // OR
             .Required("CsWinRT Projection Module", checks => checks
                 .ContainsLoadedModule("Microsoft.Web.WebView2.Core.Projection.dll"))
             .Optional("Extra Modules", checks => checks

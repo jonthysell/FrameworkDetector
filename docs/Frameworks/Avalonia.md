@@ -4,7 +4,7 @@
 
 Avalonia is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of platforms such as Windows, macOS, Linux, iOS, Android and WebAssembly.
 
-**Website:** [Avalonia UI](https://avaloniaui.net/)
+**Website:** [Avalonia UI Website](https://avaloniaui.net)
 
 ### Languages
 
@@ -57,5 +57,5 @@ It is not possible to definitively determine the use of Avalonia by an app by de
 
 ## Resources
 
-- [Official Docs](https://avaloniaui.net/)
-- [GitHub Source](https://github.com/AvaloniaUI/Avalonia)
+- [Avalonia UI Website](https://avaloniaui.net)
+- [Avalonia GitHub Source](https://github.com/AvaloniaUI/Avalonia)
