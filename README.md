@@ -155,6 +155,16 @@ detector.Info.Name == nameof(FrameworkDetector.Detectors.WPFDetector) // Link:De
 
 Then look into the calls for `PerformCheckAsync` that get called from there.
 
+## Dump of data sources
+
+If you're looking to write a new detector or improve one and need to understand the data sources available, you can use the `dump` command to get a comprehensive view of all data available for a specific process:
+
+```ps
+FrameworkDetector.CLI.exe dump -pid ###
+```
+
+This can also output (with `-o`) a JSON file with all the information available for that process used by detectors without running the detection logic.
+
 ## License
 
 MIT

@@ -67,6 +67,7 @@ public partial class CliApp
             verbosityOption,
             includeChildrenOption,
             // Commands
+            GetDumpCommand(),
             GetInspectAllCommand(),
             GetInspectCommand(),
             GetRunCommand(),

@@ -153,4 +153,32 @@ public class DetectionEngine
 
         return result;
     }
+
+    /// <summary>
+    /// Dumps known info from DataSources without performing any detection logic.
+    /// </summary>
+    /// <param name="sources"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public async Task<ToolRunResult> DumpAgainstSourcesAsync(DataSourceCollection sources, CancellationToken cancellationToken)
+    {
+        var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion);
+
+        try
+        {
+            // Step 1. Initialize all the data sources.
+            await Parallel.ForEachAsync(sources.Values.SelectMany(inner => inner), cancellationToken, async static (source, ct) =>
+            {
+                await source.LoadAndCacheDataAsync(ct);
+            });
+
+            result.AddDataSources(sources);
+
+            // TODO: Is there more we have to do here atm?
+        }
+        catch (TaskCanceledException) { } // If it gets canceled, return what we found anyway
+
+        return result;
+    }
 }
