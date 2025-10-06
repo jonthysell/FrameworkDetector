@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 using System.CommandLine;
@@ -115,10 +116,10 @@ public partial class CliApp
             ExitCode result = ExitCode.Success;
             int count = 0;
             int fails = 0;
-            foreach (var process in processesToInspect)
+            foreach (var process in processesToInspect.OrderBy(p => p.MainWindowTitle))
             {
                 string? outputFilename = string.IsNullOrEmpty(outputFolderName) ? null : Path.Combine(outputFolderName, FormatFileName(process, outputFileTemplate));
-                PrintInfo("Inspecting process {0}({1}) {2:00.0}%", process.ProcessName, process.Id, 100.0 * count++ / processesToInspect.Count);
+                PrintInfo("Inspecting app {0} [{1}]({2}) {3:00.0}%", process.MainWindowTitle, process.ProcessName, process.Id, 100.0 * count++ / processesToInspect.Count);
                 if (!await InspectProcessAsync(process, outputFilename, cancellationToken))
                 {
                     PrintError("Failed to inspect process {0}({1}).", process.ProcessName, process.Id);
