@@ -93,8 +93,11 @@ public static class ProcessExtensions
     {
         var windows = new HashSet<ProcessWindowMetadata>();
 
+        // The HWNDs for UWP apps are hidden as children under ApplicationFrameHost's top-level HWND,
+        // so we'll need to make sure we check there if the target process is UWP (which we don't know)
         var applicationFrameHosts = Process.GetProcessesByName("ApplicationFrameHost");
 
+        // The lambda we'll use to add HWNDs that belong to the target process to our result list
         bool addWindow(HWND hwnd)
         {
             try
@@ -114,6 +117,7 @@ public static class ProcessExtensions
             return true;
         }
 
+        // EnumWindows calls the given callback on every top-level HWND on the system
         HWND.EnumWindows((HWND hwnd) =>
         {
             try
@@ -124,13 +128,18 @@ public static class ProcessExtensions
                     var processMatch = processID == process.Id;
                     if (processMatch)
                     {
-                        // Add the top-level windows for the rootProcess
+                        // This top-level HWND belongs to our target process, so add it to our result list
                         addWindow(hwnd);
                     }
 
                     if (processMatch || applicationFrameHosts.Where(p => p.Id == processID).Any())
                     {
-                        // Add child windows plus any for the rootProcess that are currently parented with ApplicationFrameHost
+                        // HWNDs can be parented to HWNDs of different processes, which is especially true
+                        // for UWP apps, whose HWNDs get parented to ApplicationFrameHost's top-level HWND
+                        // So:
+                        // If this top-level HWND belongs to our target process OR to ApplicationFrameHost then
+                        // we need to check that if its child HWNDs also belong to the target process
+                        // TODO: Would it be too expensive to just check every top-level HWND's children?
                         hwnd.EnumChildWindows(child =>
                         {
                             try
@@ -138,6 +147,7 @@ public static class ProcessExtensions
                                 var threadID = child.GetWindowThreadProcessId(out var processID);
                                 if (threadID > 0 && processID == process.Id)
                                 {
+                                    // This child HWND belongs to our target process, so add it to our result list
                                     addWindow(child);
                                 }
                             }
