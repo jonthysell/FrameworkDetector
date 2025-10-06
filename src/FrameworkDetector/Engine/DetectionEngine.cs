@@ -29,6 +29,8 @@ public class DetectionEngine
 {
     public event DetectionProgressChangedEventHandler? DetectionProgressChanged;
 
+    public IReadOnlyList<DetectorDefinition> Detectors => _detectors;
+
     private List<DetectorDefinition> _detectors { get; init; } = new();
 
     public DetectionEngine(IEnumerable<IDetector> detectors)

@@ -17,5 +17,6 @@
     <PackageVersion Include="ConsoleTables" Version="2.7.0" />
     <PackageVersion Include="Semver" Version="3.0.0" />
     <PackageVersion Include="PeNet" Version="5.1.0" />
+    <PackageVersion Include="ConsoleInk.Net" Version="0.1.4" />
   </ItemGroup>
 </Project>

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ConsoleInk;
 using ConsoleTables;
 using System.CommandLine;
 
@@ -67,6 +68,7 @@ public partial class CliApp
             verbosityOption,
             includeChildrenOption,
             // Commands
+            GetDocsCommand(),
             GetDumpCommand(),
             GetInspectAllCommand(),
             GetInspectCommand(),
@@ -148,6 +150,7 @@ public partial class CliApp
         }
 
         Console.WriteLine();
+        // Using ConsoleTable's "MarkDown" formatting just for the specific effect, it looks worse piped into ConsoleInk
         table.Write(Format.MarkDown);
     }
 
@@ -213,6 +216,22 @@ public partial class CliApp
         Console.Out.WriteLine("warning: " + format, args);
 
         Console.ForegroundColor = oldColor;
+    }
+
+    private void PrintMarkdown(string s)
+    {
+        var options = new MarkdownRenderOptions
+        {
+            UseHyperlinks = true,
+            Theme = new ConsoleTheme
+            {
+                LinkTextStyle = Ansi.Underline + Ansi.FgBrightBlue,
+                LinkUrlStyle = Ansi.FgBrightCyan
+            },
+        };
+
+        Console.WriteLine();
+        MarkdownConsole.Render(s, Console.Out, options);
     }
 
     internal void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

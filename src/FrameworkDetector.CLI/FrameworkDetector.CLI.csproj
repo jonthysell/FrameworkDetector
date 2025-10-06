@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\docs\**\*.md" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FrameworkDetector\FrameworkDetector.csproj" />
   </ItemGroup>
 
@@ -15,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="ConsoleTables" />
+    <PackageReference Include="ConsoleInk.Net" />
   </ItemGroup>
 
 </Project>
