@@ -106,6 +106,7 @@ public partial class CliApp
                     catch
                     {
                         // Ignore processes we can't access
+                        PrintWarning("Cannot access process {0}({1}), try running as Administrator", process.ProcessName, process.Id);
                     }
                 }
             }
