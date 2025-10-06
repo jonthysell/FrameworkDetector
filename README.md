@@ -45,13 +45,15 @@ dotnet test ./src/FrameworkDetector.sln
 
 ## Usage
 
-### Inspect all Processes
+### Inspect all Applications
 
-By default, filters to processes which have a Main Window Handle.
+By default, filters to processes which have a Main Window Handle or visible child window.
 
 ```ps
 FrameworkDetector.CLI.exe all
 ```
+
+You can use `--filterWindowProcesses false` to inspect all processes. Some processes in either case may require admin rights to inspect.
 
 ### Inspect by Process Id (PID)
 

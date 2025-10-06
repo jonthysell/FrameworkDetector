@@ -48,10 +48,10 @@ public partial class CliApp
         // See: https://learn.microsoft.com/dotnet/api/system.diagnostics.process.mainwindowhandle
         Option<bool?> filterWindowProcessesOption = new("--filterWindowProcesses")
         {
-            Description = "Filters processes by those that are more likely to be applications with a MainWindowHandle. Default is true.",
+            Description = "Filters processes by those that are more likely to be applications with a MainWindowHandle or a visible child window. Default is true.",
         };
 
-        var command = new Command("all", "Inspect all running processes")
+        var command = new Command("all", "Inspect all running applications")
         {
             filterWindowProcessesOption,
             outputFileTemplateOption,
@@ -96,7 +96,10 @@ public partial class CliApp
                 {
                     try
                     {
-                        if (process.MainWindowHandle != IntPtr.Zero)
+                        // Note: MainWindowHandle works for Win32 processes easily, but UWP processes are hosted under the application frame host, so we also need to look there for apps.
+                        // Put it after the OR, so we only look up for UWP apps, if we don't already have a MainWindowHandle and only grab Visible windows (otherwise we get a lot of services and other background processes).
+                        // TODO: I think this is a bit similar to how Task Manager does it (filters their 'Apps' list) [i.e. has child window]; but we could probably still improve/test/encapsulate this further.
+                        if (process.MainWindowHandle != IntPtr.Zero || process.GetActiveWindowMetadata().Any(w => w.IsVisible == true))
                         {
                             // Wait for the process to be ready (in case it just started).
                             // TODO: If this is too slow we can probably ignore, as we assume that all apps we want to inspect will already be running...
