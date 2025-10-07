@@ -38,6 +38,29 @@ public static class ProcessExtensions
     }
 
     /// <summary>
+    /// Checks if the given process can be inspected.
+    /// </summary>
+    /// <param name="process">The target process.</param>
+    /// <param name="checkForWindows">Whether or not to check that the process has (visible) GUI windows.</param>
+    /// <returns>Whether or not the process can be inspected.</returns>
+    public static bool IsProcessInspectable(this Process process, bool checkForWindows = false)
+    {
+        try
+        {
+            if (process.MainModule?.FileVersionInfo is not null)
+            {
+                // Note: MainWindowHandle works for Win32 processes easily, but UWP processes are hosted under the application frame host, so we also need to look there for apps.
+                // Put it after the OR, so we only look up for UWP apps, if we don't already have a MainWindowHandle and only grab Visible windows (otherwise we get a lot of services and other background processes).
+                // TODO: I think this is a bit similar to how Task Manager does it (filters their 'Apps' list) [i.e. has child window]; but we could probably still improve/test/encapsulate this further.
+                return !checkForWindows || process.MainWindowHandle != IntPtr.Zero || process.GetActiveWindowMetadata().Any(w => w.IsVisible == true);
+            }
+        }
+        catch { }
+
+        return false;
+    }
+
+    /// <summary>
     /// Given an array of processes, tries to identify if one is the root (parent) of all of the others.
     /// </summary>
     /// <param name="processes">The array of processes.</param>

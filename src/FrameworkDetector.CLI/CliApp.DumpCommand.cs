@@ -72,8 +72,6 @@ public partial class CliApp
                 {
                     return (int)ExitCode.Success;
                 }
-
-                return (int)ExitCode.InspectFailed;
             }
             else if (!string.IsNullOrWhiteSpace(processName))
             {
@@ -100,8 +98,10 @@ public partial class CliApp
                             return (int)ExitCode.Success;
                         }
                     }
-
-                    PrintError("Please run again with the PID of the specific process you wish to inspect.");
+                    else
+                    {
+                        PrintError("Please run again with the PID of the specific process you wish to dump.");
+                    }
                 }
                 else if (await DumpProcessAsync(processes[0], outputFilename, cancellationToken))
                 {
@@ -123,6 +123,12 @@ public partial class CliApp
     /// Encapsulation of initializing datasource and grabbing engine reference to kick-off a detection against all registered detectors (see ConfigureServices)
     private async Task<bool> DumpProcessAsync(Process process, string? outputFilename, CancellationToken cancellationToken)
     {
+        if (!process.IsProcessInspectable())
+        {
+            PrintError("Cannot dump process {0}({1}), try running as Administrator.", process.ProcessName, process.Id);
+            return false;
+        }
+
         PrintInfo($"Dumping process {process.ProcessName}({process.Id}){(IncludeChildren ? " (and children)" : "")}");
 
         var processDataSources = new List<ProcessDataSource>() { new ProcessDataSource(process) };
@@ -141,7 +147,7 @@ public partial class CliApp
 
         if (cancellationToken.IsCancellationRequested)
         {
-            PrintWarning("Inspection was canceled prior to completion.");
+            PrintWarning("Dump was canceled prior to completion.");
             Console.WriteLine();
         }
 

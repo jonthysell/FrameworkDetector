@@ -77,41 +77,29 @@ public partial class CliApp
             var filterProcesses = parseResult.GetValue(filterWindowProcessesOption) ?? true;
 
             // Create output folder (if specified) for output
-            if (!string.IsNullOrEmpty(outputFolderName) && !System.IO.Directory.Exists(outputFolderName))
+            if (!string.IsNullOrEmpty(outputFolderName) && !Directory.Exists(outputFolderName))
             {
-                System.IO.Directory.CreateDirectory(outputFolderName);
+                Directory.CreateDirectory(outputFolderName);
             }
 
             var processes = Process.GetProcesses();
             List<Process> processesToInspect = new();
 
-            // 1. Add all processes if we're not filtering to MainWindows (not default)
-            if (!filterProcesses)
+            // 1. Add all processes
+            foreach (var process in processes)
             {
-                processesToInspect.AddRange(processes);
-            }
-            else
-            {
-                foreach (var process in processes)
+                // Check the process is inspectable (filtering for processes with a GUI window if requested)
+                if (process.IsProcessInspectable(filterProcesses))
                 {
-                    try
-                    {
-                        // Note: MainWindowHandle works for Win32 processes easily, but UWP processes are hosted under the application frame host, so we also need to look there for apps.
-                        // Put it after the OR, so we only look up for UWP apps, if we don't already have a MainWindowHandle and only grab Visible windows (otherwise we get a lot of services and other background processes).
-                        // TODO: I think this is a bit similar to how Task Manager does it (filters their 'Apps' list) [i.e. has child window]; but we could probably still improve/test/encapsulate this further.
-                        if (process.MainWindowHandle != IntPtr.Zero || process.GetActiveWindowMetadata().Any(w => w.IsVisible == true))
-                        {
-                            // Wait for the process to be ready (in case it just started).
-                            // TODO: If this is too slow we can probably ignore, as we assume that all apps we want to inspect will already be running...
-                            process.WaitForInputIdle();
-                            processesToInspect.Add(process);
-                        }
-                    }
-                    catch
-                    {
-                        // Ignore processes we can't access
-                        PrintWarning("Cannot access process {0}({1}), try running as Administrator", process.ProcessName, process.Id);
-                    }
+                    // Wait for the process to be ready (in case it just started).
+                    // TODO: If this is too slow we can probably ignore, as we assume that all apps we want to inspect will already be running...
+                    process.WaitForInputIdle();
+                    processesToInspect.Add(process);
+                }
+                else
+                {
+                    // Ignore processes we can't access
+                    PrintWarning("Cannot inspect process {0}({1}), try running as Administrator.", process.ProcessName, process.Id);
                 }
             }
 
