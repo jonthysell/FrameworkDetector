@@ -38,22 +38,35 @@ public static class ProcessExtensions
     }
 
     /// <summary>
-    /// Checks if the given process can be inspected.
+    /// Checks if the given process information is accessible in our current context.
     /// </summary>
     /// <param name="process">The target process.</param>
-    /// <param name="checkForWindows">Whether or not to check that the process has (visible) GUI windows.</param>
-    /// <returns>Whether or not the process can be inspected.</returns>
-    public static bool IsProcessInspectable(this Process process, bool checkForWindows = false)
+    /// <returns>Whether or not the process information is accessible in our current context.</returns>
+    public static bool IsAccessible(this Process process)
     {
         try
         {
-            if (process.MainModule?.FileVersionInfo is not null)
-            {
-                // Note: MainWindowHandle works for Win32 processes easily, but UWP processes are hosted under the application frame host, so we also need to look there for apps.
-                // Put it after the OR, so we only look up for UWP apps, if we don't already have a MainWindowHandle and only grab Visible windows (otherwise we get a lot of services and other background processes).
-                // TODO: I think this is a bit similar to how Task Manager does it (filters their 'Apps' list) [i.e. has child window]; but we could probably still improve/test/encapsulate this further.
-                return !checkForWindows || process.MainWindowHandle != IntPtr.Zero || process.GetActiveWindowMetadata().Any(w => w.IsVisible == true);
-            }
+            // TODO: do this for real, this is just a quick heurestic
+            return process.MainModule?.FileVersionInfo is not null;
+        }
+        catch { }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the given process has a GUI.
+    /// </summary>
+    /// <param name="process">The target process.</param>
+    /// <returns>Whether or not the process has a GUI.</returns>
+    public static bool HasGUI(this Process process)
+    {
+        try
+        {
+            // Note: MainWindowHandle works for Win32 processes easily, but UWP processes are hosted under the application frame host, so we also need to look there for apps.
+            // Put it after the OR, so we only look up for UWP apps, if we don't already have a MainWindowHandle and only grab Visible windows (otherwise we get a lot of services and other background processes).
+            // TODO: I think this is a bit similar to how Task Manager does it (filters their 'Apps' list) [i.e. has child window]; but we could probably still improve/test/encapsulate this further.
+            return process.MainWindowHandle != IntPtr.Zero || process.GetActiveWindowMetadata().Any(w => w.IsVisible == true && w.ClassName != "PseudoConsoleWindow");
         }
         catch { }
 

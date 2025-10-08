@@ -123,13 +123,27 @@ public partial class CliApp
     /// Encapsulation of initializing datasource and grabbing engine reference to kick-off a detection against all registered detectors (see ConfigureServices)
     private async Task<bool> DumpProcessAsync(Process process, string? outputFilename, CancellationToken cancellationToken)
     {
-        if (!process.IsProcessInspectable())
+        PrintInfo($"Dumping process {process.ProcessName}({process.Id}){(IncludeChildren ? " (and children)" : "")}");
+
+        if (!process.IsAccessible())
         {
-            PrintError("Cannot dump process {0}({1}), try running as Administrator.", process.ProcessName, process.Id);
+            PrintError("Cannot access process {0}({1}) to dump, try running as Administrator.", process.ProcessName, process.Id);
             return false;
         }
 
-        PrintInfo($"Dumping process {process.ProcessName}({process.Id}){(IncludeChildren ? " (and children)" : "")}");
+        if (process.HasGUI())
+        {
+            try
+            {
+                PrintInfo("Waiting for input idle for process {0}({1})", process.ProcessName, process.Id);
+                process.WaitForInputIdle();
+            }
+            catch
+            {
+                PrintError("Waiting for input idle for process {0}({1}) failed, try running again.", process.ProcessName, process.Id);
+                return false;
+            }
+        }
 
         var processDataSources = new List<ProcessDataSource>() { new ProcessDataSource(process) };
         if (IncludeChildren)

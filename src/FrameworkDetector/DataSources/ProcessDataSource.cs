@@ -34,7 +34,7 @@ public class ProcessDataSource : IProcessDataSource
 
     public async Task<bool> LoadAndCacheDataAsync(CancellationToken cancellationToken)
     {
-        if (Process.IsProcessInspectable())
+        if (Process.IsAccessible())
         {
             ProcessMetadata = await ProcessMetadata.GetMetadataAsync(Process, cancellationToken);
             return true;

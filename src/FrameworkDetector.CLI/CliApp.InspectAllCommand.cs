@@ -85,22 +85,25 @@ public partial class CliApp
             var processes = Process.GetProcesses();
             List<Process> processesToInspect = new();
 
-            // 1. Add all processes
+            // 1. Add all inspectable processes (filtering for processes with a GUI window if requested)
             foreach (var process in processes)
             {
-                // Check the process is inspectable (filtering for processes with a GUI window if requested)
-                if (process.IsProcessInspectable(filterProcesses))
+                var isAccessible = process.IsAccessible();
+                var hasGUI = process.HasGUI();
+
+                if (isAccessible && (!filterProcesses || (filterProcesses && hasGUI)))
                 {
-                    // Wait for the process to be ready (in case it just started).
-                    // TODO: If this is too slow we can probably ignore, as we assume that all apps we want to inspect will already be running...
-                    process.WaitForInputIdle();
+                    // Add processes that are accessible and meet filtering
+                    PrintInfo("Planning to inspect process {0}({1})", process.ProcessName, process.Id);
                     processesToInspect.Add(process);
                 }
-                else
+                else if (!isAccessible && (!filterProcesses || (filterProcesses && hasGUI)))
                 {
-                    // Ignore processes we can't access
+                    // Warn for processes that aren't accessible and meet filtering
                     PrintWarning("Cannot inspect process {0}({1}), try running as Administrator.", process.ProcessName, process.Id);
                 }
+
+                // Ignore remaining processes
             }
 
             // 2. Run against all the processes (one-by-one for now)

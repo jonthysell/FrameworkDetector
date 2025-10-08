@@ -123,17 +123,31 @@ public partial class CliApp
     /// Encapsulation of initializing datasource and grabbing engine reference to kick-off a detection against all registered detectors (see ConfigureServices)
     private async Task<bool> InspectProcessAsync(Process process, string? outputFilename, CancellationToken cancellationToken)
     {
-        if (!process.IsProcessInspectable())
-        {
-            PrintError("Cannot inspect process {0}({1}), try running as Administrator.", process.ProcessName, process.Id);
-            return false;
-        }
-
         // TODO: Probably have this elsewhere to be called
         var message = $"Inspecting process {process.ProcessName}({process.Id}){(IncludeChildren ? " (and children)" : "")}";
         if (Verbosity > VerbosityLevel.Quiet)
         {
             Console.Write($"{message}:");
+        }
+
+        if (!process.IsAccessible())
+        {
+            PrintError("Cannot access process {0}({1}) to inspect, try re-running as Administrator.", process.ProcessName, process.Id);
+            return false;
+        }
+
+        if (process.HasGUI())
+        {
+            try
+            {
+                PrintInfo("Waiting for input idle for process {0}({1})", process.ProcessName, process.Id);
+                process.WaitForInputIdle();
+            }
+            catch
+            {
+                PrintError("Waiting for input idle for process {0}({1}) failed, try running again.", process.ProcessName, process.Id);
+                return false;
+            }
         }
 
         var processDataSources = new List<ProcessDataSource>() { new ProcessDataSource(process) };
