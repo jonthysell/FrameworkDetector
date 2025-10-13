@@ -12,7 +12,9 @@ Developers can use WebView1 to host their entire app written using web technolog
 
 **Framework Languages:** C, C++
 
-**App Languages:** C++, C#, Visual Basic and other .NET languages
+**Host App Languages:** C++, C#, Visual Basic and other .NET languages
+
+**Hosted App Languages:** Web (HTML, CSS, JavaScript and TypeScript)
 
 ### OS Support
 

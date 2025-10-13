@@ -12,7 +12,9 @@ Developers can use CEF to host their entire app written using web technologies, 
 
 **Framework Languages:** C, C++
 
-**App Languages:** C, C++, Delphi, Go, Java, Python, C#, Visual Basic and other .NET languages
+**Host App Languages:** C, C++, Delphi, Go, Java, Python, C#, Visual Basic and other .NET languages
+
+**Hosted App Languages:** Web (HTML, CSS, JavaScript and TypeScript)
 
 ### OS Support
 

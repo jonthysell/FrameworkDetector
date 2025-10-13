@@ -10,9 +10,11 @@ React Native is an open-source framework developed by Meta that enables you to b
 
 ### Languages
 
-**Framework Languages:** C++, C#, XAML, JS and TS
+**Framework Languages:** C++, C#, XAML, JavaScript and TypeScript
 
-**App Languages:** C++, C#, XAML, JS and TS
+**Host App Languages:** C++, C#, XAML
+
+**Hosted App Languages:** JavaScript and TypeScript
 
 ### OS Support
 
