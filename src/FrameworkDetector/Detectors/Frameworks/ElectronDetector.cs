@@ -6,6 +6,10 @@ using FrameworkDetector.Engine;
 
 namespace FrameworkDetector.Detectors;
 
+/// <summary>
+/// Detector for Electron (Electron).
+/// Built according to docs/Frameworks/Electron.md.
+/// </summary>
 public class ElectronDetector : IDetector 
 {
     public string Name => nameof(ElectronDetector);
