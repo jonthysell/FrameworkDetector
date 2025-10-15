@@ -6,11 +6,15 @@ using FrameworkDetector.Engine;
 
 namespace FrameworkDetector.Detectors;
 
+/// <summary>
+/// Detector for WinUI 3 for Windows App SDK (WinUI3).
+/// Built according to docs/Frameworks/WinUI3.md.
+/// </summary>
 public class WinUI3Detector : IDetector
 {
     public string Name => nameof(WinUI3Detector);
 
-    public string Description => "WinUI 3 (for WinAppSDK)";
+    public string Description => "WinUI 3 for Windows App SDK";
 
     public string FrameworkId => "WinUI3";
 
