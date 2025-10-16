@@ -75,7 +75,7 @@ public static class ContainsActiveWindowCheck
         public ProcessWindowMetadata WindowFound { get; } = windowFound;
     }
 
-    extension(DetectorCheckGroup @this)
+    extension(IDetectorCheckGroup @this)
     {
         /// <summary>
         /// Checks for an active window in the Process by class name or text.
@@ -83,14 +83,20 @@ public static class ContainsActiveWindowCheck
         /// <param name="className">An active window's class name must contain this text, if specified.</param>
         /// <param name="text">An active window's text (title or caption) must contain this text, if specified.</param>
         /// <returns></returns>
-        public DetectorCheckGroup ContainsActiveWindow(string? className = null, string? text = null)
+        public IDetectorCheckGroup ContainsActiveWindow(string? className = null, string? text = null)
         {
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
             // will be passed into the PerformCheckAsync method below to do the actual check.
             var args = new ContainsActiveWindowArgs(className, text);
             args.Validate();
-            @this.AddCheck(new CheckDefinition<ContainsActiveWindowArgs, ContainsActiveWindowData>(GetCheckRegistrationInfo(args), args));
+
+            if (@this is not DetectorCheckGroup dcg)
+            {
+                throw new InvalidOperationException();
+            }
+
+            dcg.AddCheck(new CheckDefinition<ContainsActiveWindowArgs, ContainsActiveWindowData>(GetCheckRegistrationInfo(args), args));
 
             return @this;
         }

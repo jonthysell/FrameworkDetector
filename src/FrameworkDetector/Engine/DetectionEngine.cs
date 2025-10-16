@@ -86,14 +86,18 @@ public class DetectionEngine
                     }
 
                     // Sanity CheckDefinition
-                    if (requiredCheckGroup.Value.Count == 0)
+                    if (requiredCheckGroup.Value is not DetectorCheckGroup dcg)
+                    {
+                        throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Required {requiredCheckGroup.Key} group is not a DetectorCheckGroup!");
+                    }
+                    else if (dcg.Count == 0)
                     {
                         throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Required {requiredCheckGroup.Key} group does not have any required checks!");
                     }
 
                     bool found = true;
 
-                    foreach (var requiredCheck in requiredCheckGroup.Value)
+                    foreach (var requiredCheck in dcg)
                     {
                         var innerResult = await requiredCheck.PerformCheckAsync(detector.Info, sources, cancellationToken);
 
@@ -124,7 +128,17 @@ public class DetectionEngine
                         break;
                     }
 
-                    foreach (var optionalCheck in optionalCheckGroup.Value)
+                    // Sanity CheckDefinition
+                    if (optionalCheckGroup.Value is not DetectorCheckGroup dcg)
+                    {
+                        throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Optional {optionalCheckGroup.Key} group is not a DetectorCheckGroup!");
+                    }
+                    else if (dcg.Count == 0)
+                    {
+                        throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Optional {optionalCheckGroup.Key} group does not have any required checks!");
+                    }
+
+                    foreach (var optionalCheck in dcg)
                     {
                         var innerResult = await optionalCheck.PerformCheckAsync(detector.Info, sources, cancellationToken);
 

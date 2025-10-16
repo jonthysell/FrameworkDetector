@@ -127,7 +127,7 @@ public static class ContainsLoadedModuleCheck
         public WindowsBinaryMetadata ModuleFound { get; } = moduleFound;
     }
 
-    extension(DetectorCheckGroup @this)
+    extension(IDetectorCheckGroup @this)
     {
         /// <summary>
         /// Checks for module by name in Process.LoadedModules.
@@ -139,8 +139,13 @@ public static class ContainsLoadedModuleCheck
         /// <param name="productVersionRange">A loaded module's product version must match this semver version range sepc, if specified.</param>
         /// <param name="checkForNgenModule">Whether or not to also match NGENed versions (.ni.dll) of the specified filename and/or original filename.</param>
         /// <returns></returns>
-        public DetectorCheckGroup ContainsLoadedModule(string? filename = null, string? originalFilename = null, string? fileVersionRange = null, string? productName = null, string? productVersionRange = null, bool? checkForNgenModule = null)
+        public IDetectorCheckGroup ContainsLoadedModule(string? filename = null, string? originalFilename = null, string? fileVersionRange = null, string? productName = null, string? productVersionRange = null, bool? checkForNgenModule = null)
         {
+            if (@this is not DetectorCheckGroup dcg)
+            {
+                throw new InvalidOperationException();
+            }
+
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
             // will be passed into the PerformCheckAsync method below to do the actual check.
@@ -148,7 +153,7 @@ public static class ContainsLoadedModuleCheck
             var args = new ContainsLoadedModuleArgs(filename, originalFilename, fileVersionRange, productName, productVersionRange, checkForNgenModule);
             args.Validate();
 
-            @this.AddCheck(new CheckDefinition<ContainsLoadedModuleArgs, ContainsLoadedModuleData>(GetCheckRegistrationInfo(args), args));
+            dcg.AddCheck(new CheckDefinition<ContainsLoadedModuleArgs, ContainsLoadedModuleData>(GetCheckRegistrationInfo(args), args));
 
             return @this;
         }
