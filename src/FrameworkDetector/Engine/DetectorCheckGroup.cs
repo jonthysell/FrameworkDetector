@@ -16,7 +16,6 @@ namespace FrameworkDetector.Engine;
 /// General collection of <see cref="ICheckDefinition"/> checks. Extension point for any checks to hook into Fluent API surface. e.g. <see cref="ContainsLoadedModuleCheck"/>.
 /// </summary>
 public class DetectorCheckGroup(string Name) : IDetectorCheckGroup,
-                                               ContainsLoadedModuleCheck.IContainsLoadedModuleDetectorCheckGroup,
                                                IReadOnlyCollection<ICheckDefinition>
 {
     internal List<ICheckDefinition> Checks { get; init; } = new();
@@ -26,7 +25,9 @@ public class DetectorCheckGroup(string Name) : IDetectorCheckGroup,
     internal Func<IDetectorCheckResult, string>? VersionGetter = null;
 
     public int Count => Checks.Count;
-    
+
+    public DetectorCheckGroup Get() => this;
+
     public void AddCheck(ICheckDefinition definition)
     {
         Checks.Add(definition);
@@ -57,4 +58,14 @@ public class DetectorCheckGroup(string Name) : IDetectorCheckGroup,
     public override string ToString() => Name;
 }
 
-public interface IDetectorCheckGroup { }
+public interface IDetectorCheckGroup
+{
+    DetectorCheckGroup Get();
+}
+
+public abstract class DetectorCheckGroupWrapper(IDetectorCheckGroup idcg) : IDetectorCheckGroup
+{
+    internal IDetectorCheckGroup IDetectorCheckGroup = idcg;
+
+    public DetectorCheckGroup Get() => IDetectorCheckGroup.Get();
+}

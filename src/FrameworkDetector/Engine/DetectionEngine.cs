@@ -85,12 +85,10 @@ public class DetectionEngine
                         break;
                     }
 
+                    var dcg = requiredCheckGroup.Value.Get();
+
                     // Sanity CheckDefinition
-                    if (requiredCheckGroup.Value is not DetectorCheckGroup dcg)
-                    {
-                        throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Required {requiredCheckGroup.Key} group is not a DetectorCheckGroup!");
-                    }
-                    else if (dcg.Count == 0)
+                    if (dcg.Count == 0)
                     {
                         throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Required {requiredCheckGroup.Key} group does not have any required checks!");
                     }
@@ -133,12 +131,10 @@ public class DetectionEngine
                         break;
                     }
 
+                    var dcg = optionalCheckGroup.Value.Get();
+
                     // Sanity CheckDefinition
-                    if (optionalCheckGroup.Value is not DetectorCheckGroup dcg)
-                    {
-                        throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Optional {optionalCheckGroup.Key} group is not a DetectorCheckGroup!");
-                    }
-                    else if (dcg.Count == 0)
+                    if (dcg.Count == 0)
                     {
                         throw new ArgumentException($"Detector \"{detector.Info.Name}\"'s Optional {optionalCheckGroup.Key} group does not have any required checks!");
                     }

@@ -70,10 +70,7 @@ public static class ContainsExportedFunctionCheck
         /// <returns></returns>
         public IDetectorCheckGroup ContainsExportedFunction(string? name = null)
         {
-            if (@this is not DetectorCheckGroup dcg)
-            {
-                throw new InvalidOperationException();
-            }
+            var dcg = @this.Get();
 
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
@@ -84,7 +81,7 @@ public static class ContainsExportedFunctionCheck
 
             dcg.AddCheck(new CheckDefinition<ContainsExportedFunctionArgs, ContainsExportedFunctionData>(GetCheckRegistrationInfo(args), args));
 
-            return @this;
+            return dcg;
         }
     }
 

@@ -85,20 +85,17 @@ public static class ContainsActiveWindowCheck
         /// <returns></returns>
         public IDetectorCheckGroup ContainsActiveWindow(string? className = null, string? text = null)
         {
+            var dcg = @this.Get();
+
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
             // will be passed into the PerformCheckAsync method below to do the actual check.
             var args = new ContainsActiveWindowArgs(className, text);
             args.Validate();
 
-            if (@this is not DetectorCheckGroup dcg)
-            {
-                throw new InvalidOperationException();
-            }
-
             dcg.AddCheck(new CheckDefinition<ContainsActiveWindowArgs, ContainsActiveWindowData>(GetCheckRegistrationInfo(args), args));
 
-            return @this;
+            return dcg;
         }
     }
 

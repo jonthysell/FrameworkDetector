@@ -127,7 +127,21 @@ public static class ContainsLoadedModuleCheck
         public WindowsBinaryMetadata ModuleFound { get; } = moduleFound;
     }
 
-    public interface IContainsLoadedModuleDetectorCheckGroup : IDetectorCheckGroup { };
+    /// <summary>
+    /// The type returned by <see cref="ContainsLoadedModule"/> which optionally allows calling <see cref="GetVersionFromModule"/>.
+    /// </summary>
+    /// <param name="idcg">A base <see cref="IDetectorCheckGroup"/> to wrap.</param>
+    public class ContainsLoadedModuleDetectorCheckGroup(IDetectorCheckGroup idcg) : DetectorCheckGroupWrapper(idcg)
+    {
+        public IDetectorCheckGroup GetVersionFromModule(ModuleVersionType moduleVersionSource = ModuleVersionType.FileVersion)
+        {
+            var dcg = Get();
+
+            dcg.SetVersionGetter(r => GetVersionFromCheckResult(moduleVersionSource, r as DetectorCheckResult<ContainsLoadedModuleArgs, ContainsLoadedModuleData>));
+
+            return dcg;
+        }
+    }
 
     extension(IDetectorCheckGroup @this)
     {
@@ -141,12 +155,9 @@ public static class ContainsLoadedModuleCheck
         /// <param name="productVersionRange">A loaded module's product version must match this semver version range sepc, if specified.</param>
         /// <param name="checkForNgenModule">Whether or not to also match NGENed versions (.ni.dll) of the specified filename and/or original filename.</param>
         /// <returns></returns>
-        public IContainsLoadedModuleDetectorCheckGroup ContainsLoadedModule(string? filename = null, string? originalFilename = null, string? fileVersionRange = null, string? productName = null, string? productVersionRange = null, bool? checkForNgenModule = null)
+        public ContainsLoadedModuleDetectorCheckGroup ContainsLoadedModule(string? filename = null, string? originalFilename = null, string? fileVersionRange = null, string? productName = null, string? productVersionRange = null, bool? checkForNgenModule = null)
         {
-            if (@this is not DetectorCheckGroup dcg || @this is not IContainsLoadedModuleDetectorCheckGroup retValue)
-            {
-                throw new InvalidOperationException();
-            }
+            var dcg = @this.Get();
 
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
@@ -157,28 +168,7 @@ public static class ContainsLoadedModuleCheck
 
             dcg.AddCheck(new CheckDefinition<ContainsLoadedModuleArgs, ContainsLoadedModuleData>(GetCheckRegistrationInfo(args), args));
 
-            return retValue;
-        }
-    }
-
-    public enum ModuleVersionType
-    {
-        FileVersion = 0,
-        ProductVersion,
-    }
-
-    extension(IContainsLoadedModuleDetectorCheckGroup @this)
-    {
-        public IDetectorCheckGroup GetVersionFromModule(ModuleVersionType moduleVersionSource = ModuleVersionType.FileVersion)
-        {
-            if (@this is not DetectorCheckGroup dcg)
-            {
-                throw new InvalidOperationException();
-            }
-
-            dcg.SetVersionGetter(r => GetVersionFromCheckResult(moduleVersionSource, r as DetectorCheckResult<ContainsLoadedModuleArgs, ContainsLoadedModuleData>));
-
-            return dcg;
+            return new ContainsLoadedModuleDetectorCheckGroup(dcg);
         }
     }
 
@@ -268,4 +258,10 @@ public static class ContainsLoadedModuleCheck
             result.CheckStatus = DetectorCheckStatus.Error;
         }
     }
+}
+
+public enum ModuleVersionType
+{
+    FileVersion = 0,
+    ProductVersion,
 }

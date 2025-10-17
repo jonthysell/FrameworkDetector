@@ -97,10 +97,7 @@ public static class ContainsImportedFunctionCheck
         /// <returns></returns>
         public IDetectorCheckGroup ContainsImportedFunction(string? moduleName = null, string? functionName = null, bool? delayLoaded = null)
         {
-            if (@this is not DetectorCheckGroup dcg)
-            {
-                throw new InvalidOperationException();
-            }
+            var dcg = @this.Get();
 
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
@@ -111,7 +108,7 @@ public static class ContainsImportedFunctionCheck
 
             dcg.AddCheck(new CheckDefinition<ContainsImportedFunctionArgs, ContainsImportedFunctionData>(GetCheckRegistrationInfo(args), args));
 
-            return @this;
+            return dcg;
         }
     }
 
