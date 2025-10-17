@@ -18,5 +18,5 @@ public interface IConfigSetupDetectorRequirements
     /// <param name="groupName">Label for this check group.</param>
     /// <param name="checks">List of checks to perform.</param>
     /// <returns></returns>
-    IConfigAdditionalDetectorRequirements Required(string groupName, Func<DetectorCheckGroup, DetectorCheckGroup> checks);
+    IConfigAdditionalDetectorRequirements Required(string groupName, Func<IDetectorCheckGroup, IDetectorCheckGroup> checks);
 }

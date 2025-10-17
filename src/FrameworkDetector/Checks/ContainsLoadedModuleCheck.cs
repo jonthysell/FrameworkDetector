@@ -127,7 +127,23 @@ public static class ContainsLoadedModuleCheck
         public WindowsBinaryMetadata ModuleFound { get; } = moduleFound;
     }
 
-    extension(DetectorCheckGroup @this)
+    /// <summary>
+    /// The type returned by <see cref="ContainsLoadedModule"/> which optionally allows calling <see cref="GetVersionFromModule"/>.
+    /// </summary>
+    /// <param name="idcg">A base <see cref="IDetectorCheckGroup"/> to wrap.</param>
+    public class ContainsLoadedModuleDetectorCheckGroup(IDetectorCheckGroup idcg) : DetectorCheckGroupWrapper(idcg)
+    {
+        public IDetectorCheckGroup GetVersionFromModule(ModuleVersionType moduleVersionSource = ModuleVersionType.FileVersion)
+        {
+            var dcg = Get();
+
+            dcg.SetVersionGetter(r => GetVersionFromCheckResult(moduleVersionSource, r as DetectorCheckResult<ContainsLoadedModuleArgs, ContainsLoadedModuleData>));
+
+            return dcg;
+        }
+    }
+
+    extension(IDetectorCheckGroup @this)
     {
         /// <summary>
         /// Checks for module by name in Process.LoadedModules.
@@ -139,8 +155,10 @@ public static class ContainsLoadedModuleCheck
         /// <param name="productVersionRange">A loaded module's product version must match this semver version range sepc, if specified.</param>
         /// <param name="checkForNgenModule">Whether or not to also match NGENed versions (.ni.dll) of the specified filename and/or original filename.</param>
         /// <returns></returns>
-        public DetectorCheckGroup ContainsLoadedModule(string? filename = null, string? originalFilename = null, string? fileVersionRange = null, string? productName = null, string? productVersionRange = null, bool? checkForNgenModule = null)
+        public ContainsLoadedModuleDetectorCheckGroup ContainsLoadedModule(string? filename = null, string? originalFilename = null, string? fileVersionRange = null, string? productName = null, string? productVersionRange = null, bool? checkForNgenModule = null)
         {
+            var dcg = @this.Get();
+
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
             // will be passed into the PerformCheckAsync method below to do the actual check.
@@ -148,10 +166,26 @@ public static class ContainsLoadedModuleCheck
             var args = new ContainsLoadedModuleArgs(filename, originalFilename, fileVersionRange, productName, productVersionRange, checkForNgenModule);
             args.Validate();
 
-            @this.AddCheck(new CheckDefinition<ContainsLoadedModuleArgs, ContainsLoadedModuleData>(GetCheckRegistrationInfo(args), args));
+            dcg.AddCheck(new CheckDefinition<ContainsLoadedModuleArgs, ContainsLoadedModuleData>(GetCheckRegistrationInfo(args), args));
 
-            return @this;
+            return new ContainsLoadedModuleDetectorCheckGroup(dcg);
         }
+    }
+
+    public static string GetVersionFromCheckResult(ModuleVersionType moduleVersionSource, DetectorCheckResult<ContainsLoadedModuleArgs, ContainsLoadedModuleData>? result)
+    {
+        if (result is not null && result.CheckStatus == DetectorCheckStatus.CompletedPassed)
+        {
+            switch(moduleVersionSource)
+            {
+                case ModuleVersionType.FileVersion:
+                    return Version.TryParseCleaned(result.OutputData?.ModuleFound.FileVersion, out var fileVer) && fileVer is not null ? fileVer.ToShortString() : string.Empty;
+                case ModuleVersionType.ProductVersion:
+                    return Version.TryParseCleaned(result.OutputData?.ModuleFound.ProductVersion, out var productVer) && productVer is not null ? productVer.ToShortString() : string.Empty;
+            }
+        }
+
+        return string.Empty;
     }
 
     //// Actual check code run by engine
@@ -224,4 +258,10 @@ public static class ContainsLoadedModuleCheck
             result.CheckStatus = DetectorCheckStatus.Error;
         }
     }
+}
+
+public enum ModuleVersionType
+{
+    FileVersion = 0,
+    ProductVersion,
 }

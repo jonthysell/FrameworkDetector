@@ -10,3 +10,10 @@ public interface ICheckArgs
 
     void Validate();
 }
+
+public class CustomCheckArgs(string description) : ICheckArgs
+{
+    public string GetDescription() => description;
+
+    public void Validate() { }
+}

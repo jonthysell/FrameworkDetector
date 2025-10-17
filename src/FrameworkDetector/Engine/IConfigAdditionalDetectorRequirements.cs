@@ -6,7 +6,7 @@ using System;
 namespace FrameworkDetector.Engine;
 
 /// <summary>
-/// Fluent API Helper interface to provide meaningful context to defining a detector after calling <see cref="IConfigSetupDetectorRequirements.Required(Func{FrameworkDetector.Engine.DetectorCheckGroup, FrameworkDetector.Engine.DetectorCheckGroup})"/>
+/// Fluent API Helper interface to provide meaningful context to defining a detector after calling <see cref="IConfigSetupDetectorRequirements.Required(Func{FrameworkDetector.Engine.IDetectorCheckGroup, FrameworkDetector.Engine.IDetectorCheckGroup})"/>
 /// </summary>
 public interface IConfigAdditionalDetectorRequirements : IConfigSetupDetectorRequirements
 {
@@ -17,7 +17,7 @@ public interface IConfigAdditionalDetectorRequirements : IConfigSetupDetectorReq
     /// <param name="groupName">Name of this check group.</param>
     /// <param name="checks"></param>
     /// <returns></returns>
-    IConfigAdditionalDetectorRequirements Optional(string groupName, Func<DetectorCheckGroup, DetectorCheckGroup> checks);
+    IConfigAdditionalDetectorRequirements Optional(string groupName, Func<IDetectorCheckGroup, IDetectorCheckGroup> checks);
 
     DetectorDefinition BuildDefinition();
 }

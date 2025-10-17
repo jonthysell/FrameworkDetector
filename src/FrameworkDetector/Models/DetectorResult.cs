@@ -32,10 +32,12 @@ public class DetectorResult
 
     public bool FrameworkFound { get; set; } = false;
 
+    public string FrameworkVersion { get; set; } = string.Empty;
+
     public bool HasAnyPassedChecks => CheckResults.Any(c => c.CheckStatus == DetectorCheckStatus.CompletedPassed);
 
     public DetectorStatus DetectorStatus { get; set; } = DetectorStatus.None;
 
-    // TODO: Q: Do we want these effectively grouped by groups, i.e. the DetectorCheckGroup Name?
+    // TODO: Q: Do we want these effectively grouped by groups, i.e. the IDetectorCheckGroup Name?
     public List<IDetectorCheckResult> CheckResults { get; } = [];
 }

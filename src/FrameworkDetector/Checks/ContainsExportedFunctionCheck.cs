@@ -61,15 +61,17 @@ public static class ContainsExportedFunctionCheck
         public ProcessExportedFunctionsMetadata ExportedFunctionFound { get; } = exportedFunctionFound;
     }
 
-    extension(DetectorCheckGroup @this)
+    extension(IDetectorCheckGroup @this)
     {
         /// <summary>
         /// Checks for an exported function by name in the PE headers of the process.
         /// </summary>
         /// <param name="name">An exported function's name must contain this text, if specified.</param>
         /// <returns></returns>
-        public DetectorCheckGroup ContainsExportedFunction(string? name = null)
+        public IDetectorCheckGroup ContainsExportedFunction(string? name = null)
         {
+            var dcg = @this.Get();
+
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
             // will be passed into the PerformCheckAsync method below to do the actual check.
@@ -77,9 +79,9 @@ public static class ContainsExportedFunctionCheck
             var args = new ContainsExportedFunctionArgs(name);
             args.Validate();
 
-            @this.AddCheck(new CheckDefinition<ContainsExportedFunctionArgs, ContainsExportedFunctionData>(GetCheckRegistrationInfo(args), args));
+            dcg.AddCheck(new CheckDefinition<ContainsExportedFunctionArgs, ContainsExportedFunctionData>(GetCheckRegistrationInfo(args), args));
 
-            return @this;
+            return dcg;
         }
     }
 

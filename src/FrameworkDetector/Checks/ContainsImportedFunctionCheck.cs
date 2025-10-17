@@ -86,7 +86,7 @@ public static class ContainsImportedFunctionCheck
         public ProcessImportedFunctionsMetadata ImportedFunctionFound { get; } = importedFunctionFound;
     }
 
-    extension(DetectorCheckGroup @this)
+    extension(IDetectorCheckGroup @this)
     {
         /// <summary>
         /// Checks for an imported function in the PE headers of the process.
@@ -95,8 +95,10 @@ public static class ContainsImportedFunctionCheck
         /// <param name="functionName">An imported function's function name must contain this text, if specified.</param>
         /// <param name="delayLoaded">An imported function must be delay loaded (or not), if specified.</param>
         /// <returns></returns>
-        public DetectorCheckGroup ContainsImportedFunction(string? moduleName = null, string? functionName = null, bool? delayLoaded = null)
+        public IDetectorCheckGroup ContainsImportedFunction(string? moduleName = null, string? functionName = null, bool? delayLoaded = null)
         {
+            var dcg = @this.Get();
+
             // This copies over an entry pointing to this specific check's registration with the metadata requested by the detector.
             // The metadata along with the live data sources (as indicated by the registration)
             // will be passed into the PerformCheckAsync method below to do the actual check.
@@ -104,9 +106,9 @@ public static class ContainsImportedFunctionCheck
             var args = new ContainsImportedFunctionArgs(moduleName, functionName, delayLoaded);
             args.Validate();
 
-            @this.AddCheck(new CheckDefinition<ContainsImportedFunctionArgs, ContainsImportedFunctionData>(GetCheckRegistrationInfo(args), args));
+            dcg.AddCheck(new CheckDefinition<ContainsImportedFunctionArgs, ContainsImportedFunctionData>(GetCheckRegistrationInfo(args), args));
 
-            return @this;
+            return dcg;
         }
     }
 
