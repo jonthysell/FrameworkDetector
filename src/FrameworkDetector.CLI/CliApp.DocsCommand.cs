@@ -53,7 +53,7 @@ public partial class CliApp
                 return (int)ExitCode.ArgumentParsingError;
             }
 
-            var frameworkId = parseResult.GetValue(frameworkIdArgument);
+            var frameworkId = parseResult.GetValue(frameworkIdArgument)?.ToLowerInvariant();
 
             if (string.IsNullOrEmpty(frameworkId))
             {
@@ -71,7 +71,7 @@ public partial class CliApp
                 }
                 else if (Services.GetRequiredService<DetectionEngine>()
                                  .Detectors
-                                 .Any(d => d.Info.FrameworkId == frameworkId))
+                                 .Any(d => d.Info.FrameworkId.ToLowerInvariant() == frameworkId))
                 {
                     PrintWarning("No docs currently written for {0} Detector.", frameworkId);
                     return (int)ExitCode.InspectFailed;
@@ -102,7 +102,7 @@ public partial class CliApp
         {
             var frameworkId = detector.Info.FrameworkId;
             var frameworkDescription = detector.Info.Description;
-            var hasDocs = FrameworkDocsById.ContainsKey(frameworkId);
+            var hasDocs = FrameworkDocsById.ContainsKey(frameworkId.ToLowerInvariant());
 
             table.AddRow(frameworkId,
                          frameworkDescription,
@@ -132,7 +132,7 @@ public partial class CliApp
                         {
                             using var reader = new StreamReader(docStream);
 
-                            var frameworkId = filename.Split('.')[^2];
+                            var frameworkId = filename.Split('.')[^2].ToLowerInvariant();
                             _frameworkDocsById[frameworkId] = reader.ReadToEnd();
                         }
                     }
