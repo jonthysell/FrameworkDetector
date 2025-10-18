@@ -67,7 +67,37 @@ public partial class CliApp
                 {
                     PrintInfo("Docs found for \"{0}\":", frameworkId);
 
-                    PrintMarkdown(frameworkDoc);
+                    // Print out metadata table first
+                    // TODO: Maybe abstract to share one configured deserializer?
+                    var deserializer = new DeserializerBuilder()
+                        .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
+                        .Build();
+
+                    var docParts = frameworkDoc.Split("---", StringSplitOptions.RemoveEmptyEntries);
+
+                    if (docParts.FirstOrDefault() is string yamlPart) // Do we only want this on detailed or not below normal? && Verbosity == VerbosityLevel.Detailed
+                    {
+                        var metadata = deserializer.Deserialize<DocMetadata>(yamlPart);
+
+                        var table = ConsoleTable.From(new KeyValuePair<string, object?>[]
+                        {
+                            new ("FrameworkId", metadata.FrameworkId),
+                            new ("Title", metadata.Title),
+                            new ("Description", metadata.Description),
+                            new ("Category", metadata.Category),
+                            new ("Keywords", metadata.Keywords),
+                            new ("Source", metadata.Source),
+                            new ("Website", metadata.Website),
+                            new ("Author", metadata.Author),
+                            new ("Date", string.Format("{0:MM/dd/yyyy}", metadata?.Date)),
+                        });
+
+                        table.MaxWidth = Console.BufferWidth - 10;
+                        table.Write(Format.MarkDown);
+                    }
+
+                    // Print rest of the markdown document
+                    PrintMarkdown(docParts[^1]);
                     return (int)ExitCode.Success;
                 }
                 else if (Services.GetRequiredService<DetectionEngine>()
