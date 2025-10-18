@@ -1,3 +1,14 @@
+---
+id: WebView1
+title: Microsoft EdgeHTML (WebView1)
+description: A framework for embedding the legacy Edge (EdgeHTML) browser engine in other applications.
+website: https://learn.microsoft.com/windows/apps/design/controls/web-view
+category: Component
+keywords: Framework Detector, Web, Embedded, EdgeHTML, Legacy Edge
+ms.date: 10/13/2025
+author: jonthysell
+---
+
 # Microsoft EdgeHTML (WebView1)
 
 ## Summary

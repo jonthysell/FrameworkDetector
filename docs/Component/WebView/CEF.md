@@ -1,3 +1,14 @@
+---
+id: CEF
+title: Chromium Embedded Framework
+description: A framework for embedding Chromium-based browsers in other applications.
+source: https://bitbucket.org/chromiumembedded/cef
+category: Component
+keywords: Framework Detector, Web, Embedded, Chrome
+ms.date: 10/13/2025 
+author: jonthysell
+---
+
 # Chromium Embedded Framework (CEF)
 
 ## Summary

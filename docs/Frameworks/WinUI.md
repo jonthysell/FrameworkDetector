@@ -1,3 +1,14 @@
+---
+id: WinUI
+title: Windows UI Library for UWP (WinUI)
+description: The built-in Windows Runtime XAML UI framework for UWP applications.
+website: https://learn.microsoft.com/windows/apps/winui
+category: Framework
+keywords: Framework Detector, UI, WinUI, UWP, XAML, WinRT
+ms.date: 10/15/2025
+author: jonthysell
+---
+
 # Windows UI Library for UWP (WinUI)
 
 ## Summary

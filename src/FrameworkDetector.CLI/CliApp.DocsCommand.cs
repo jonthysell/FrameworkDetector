@@ -14,6 +14,7 @@ using System.CommandLine.Parsing;
 
 using FrameworkDetector.Engine;
 using FrameworkDetector.Models;
+using YamlDotNet.Serialization;
 
 namespace FrameworkDetector.CLI;
 
@@ -89,12 +90,20 @@ public partial class CliApp
 
     private void PrintFrameworksById()
     {
+        // Docs: https://github.com/aaubry/YamlDotNet/wiki/Serialization.Deserializer
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
+            .Build();
+
+        // TODO: Maybe tailor table display on verbosity?
         var table = new ConsoleTable("FrameworkId",
                                      "Framework Description",
-                                     "Docs");
+                                     ////"Category",
+                                     "Docs",
+                                     "Doc Updated",
+                                     "Source Repo");
 
         table.Options.EnableCount = false;
-        table.MaxWidth = Console.BufferWidth - 10;
 
         var engine = Services.GetRequiredService<DetectionEngine>();
 
@@ -103,10 +112,21 @@ public partial class CliApp
             var frameworkId = detector.Info.FrameworkId;
             var frameworkDescription = detector.Info.Description;
             var hasDocs = FrameworkDocsById.ContainsKey(frameworkId.ToLowerInvariant());
+            DocMetadata? metadata = null;
+
+            // Try to get more descriptive title from the doc metadata
+            if (hasDocs &&
+                FrameworkDocsById[frameworkId.ToLowerInvariant()].Split("---", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() is string frameworkDoc)
+            {
+                metadata = deserializer.Deserialize<DocMetadata>(frameworkDoc);
+            }
 
             table.AddRow(frameworkId,
                          frameworkDescription,
-                         hasDocs ? " ✅" : " 🟥");
+                         ////detector.Info.Category,
+                         hasDocs ? " ✅" : " 🟥",
+                         string.Format("{0:MM/dd/yyyy}", metadata?.Date),
+                         metadata?.Source?.Replace("https://", "").Replace("github.com/", ""));
         }
 
         Console.WriteLine();
@@ -143,4 +163,30 @@ public partial class CliApp
     }
 
     private Dictionary<string, string>? _frameworkDocsById = null;
+
+    private record DocMetadata
+    {
+        [YamlMember(Alias = "id")]
+        public string? FrameworkId { get; init; }
+
+        public string? Title { get; init; }
+
+        public string? Description { get; init; }
+
+        // TODO: Actual Uri type not supported in AOT by YamlDotNet without explicit converter
+        // https://github.com/aaubry/YamlDotNet/issues/1030
+        public string? Source { get; init; }
+
+        public string? Website { get; init; }
+
+        public DetectorCategory Category { get; init; }
+
+        // TODO: Converter to list of strings as CSV
+        public string? Keywords { get; init; }
+
+        [YamlMember(Alias = "ms.date")]
+        public DateTimeOffset? Date { get; init; }
+
+        public string? Author { get; init; }
+    }
 }
