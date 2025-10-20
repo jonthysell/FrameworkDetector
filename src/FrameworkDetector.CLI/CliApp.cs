@@ -25,6 +25,8 @@ public partial class CliApp
 
     private bool IncludeChildren { get; set; }
 
+    private bool WaitForInputIdle { get; set; }
+
     public CliApp() { }
 
     public async Task<int> RunAsync(string[] args, CancellationToken cancellationToken)
@@ -50,11 +52,19 @@ public partial class CliApp
             Arity = ArgumentArity.Zero, // Note: Flag only, no value
         };
 
+        Option<bool> waitForInputIdleOption = new("--waitForInputIdle", "-w")
+        {
+            Description = "Wait for input idle of process before inspecting.",
+            Recursive = true, // Note: Makes this a global command when added to the Root Command
+            Arity = ArgumentArity.Zero, // Note: Flag only, no value
+        };
+
         var rootCommand = new RootCommand("Framework Detector")
         {
             // Global Options (Recursive = true)
             verbosityOption,
             includeChildrenOption,
+            waitForInputIdleOption,
             // Commands
             GetDocsCommand(),
             GetDumpCommand(),
@@ -70,6 +80,7 @@ public partial class CliApp
         // Note: When "-v" specified without a value we get "null" so our default becomes the default value of the property.
         var verbosityString = result.GetValue(verbosityOption);
         IncludeChildren = result.GetValue(includeChildrenOption);
+        WaitForInputIdle = result.GetValue(waitForInputIdleOption);
 
         if (Enum.TryParse(verbosityString, true, out VerbosityLevel verbosity))
         {

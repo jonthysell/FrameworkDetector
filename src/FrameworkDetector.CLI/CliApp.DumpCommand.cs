@@ -132,14 +132,10 @@ public partial class CliApp
             return false;
         }
 
-        if (process.HasGUI())
+        if (WaitForInputIdle)
         {
-            try
-            {
-                PrintInfo("Waiting for input idle for process {0}({1})", process.ProcessName, process.Id);
-                process.WaitForInputIdle();
-            }
-            catch
+            PrintInfo("Waiting for input idle for process {0}({1})", process.ProcessName, process.Id);
+            if (!await process.TryWaitForIdleAsync(cancellationToken))
             {
                 PrintError("Waiting for input idle for process {0}({1}) failed, try running again.", process.ProcessName, process.Id);
                 return false;

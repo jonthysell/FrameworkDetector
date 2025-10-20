@@ -125,30 +125,29 @@ public partial class CliApp
     private async Task<bool> InspectProcessAsync(Process process, string? outputFilename, CancellationToken cancellationToken)
     {
         // TODO: Probably have this elsewhere to be called
-        var message = $"Inspecting process {process.ProcessName}({process.Id}){(IncludeChildren ? " (and children)" : "")}";
-        if (Verbosity > VerbosityLevel.Quiet)
-        {
-            Console.Write($"{message}:");
-        }
+        var target = $"process {process.ProcessName}({process.Id}){(IncludeChildren ? " (and children)" : "")}";
+
+        PrintInfo("Preparing to inspect {0}...", target);
 
         if (!process.IsAccessible())
         {
-            PrintError("Cannot access process {0}({1}) to inspect" + (!WindowsIdentity.IsRunningAsAdmin ? ", try running as Administrator." : "."), process.ProcessName, process.Id);
+            PrintError("Cannot access {0} to inspect" + (!WindowsIdentity.IsRunningAsAdmin ? ", try running as Administrator." : "."), target);
             return false;
         }
 
-        if (process.HasGUI())
+        if (WaitForInputIdle)
         {
-            try
+            PrintInfo("Waiting for input idle for {0}", target);
+            if (!await process.TryWaitForIdleAsync(cancellationToken))
             {
-                PrintInfo("Waiting for input idle for process {0}({1})", process.ProcessName, process.Id);
-                process.WaitForInputIdle();
-            }
-            catch
-            {
-                PrintError("Waiting for input idle for process {0}({1}) failed, try running again.", process.ProcessName, process.Id);
+                PrintError("Waiting for input idle for {0} failed, try running again.", target);
                 return false;
             }
+        }
+
+        if (Verbosity > VerbosityLevel.Quiet)
+        {
+            Console.Write($"Inspecting {target}:");
         }
 
         var processDataSources = new List<ProcessDataSource>() { new ProcessDataSource(process) };
@@ -164,13 +163,16 @@ public partial class CliApp
         {
             if (Verbosity > VerbosityLevel.Quiet)
             {
-                Console.Write($"\r{message}: {e.Progress:000.0}%");
+                Console.Write($"\rInspecting {target}: {e.Progress:000.0}%");
             }
         };
 
         ToolRunResult result = await engine.DetectAgainstSourcesAsync(sources, cancellationToken);
 
-        Console.WriteLine();
+        if (Verbosity > VerbosityLevel.Quiet)
+        {
+            Console.WriteLine();
+        }
 
         if (cancellationToken.IsCancellationRequested)
         {

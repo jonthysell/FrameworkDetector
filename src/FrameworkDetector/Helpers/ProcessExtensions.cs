@@ -6,11 +6,17 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 
 using System.Management;
 
 using Windows.Win32;
 using Windows.Win32.Foundation;
+
+using Windows.ApplicationModel.Core;
+using Windows.Management.Deployment;
 
 using PeNet;
 
@@ -147,6 +153,136 @@ public static class ProcessExtensions
 
         applicationUserModelId = default;
         return false;
+    }
+
+    /// <summary>
+    /// Try waiting for a process to be idle and responsive to input.
+    /// </summary>
+    /// <param name="process">The target process.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Whether or not an idle state was detected.</returns>
+    public static async Task<bool> TryWaitForIdleAsync(this Process process, CancellationToken cancellationToken) => await process.TryWaitForIdleAsync(MaxWaitForIdleTimeoutMs, cancellationToken);
+
+    private const int MaxWaitForIdleTimeoutMs = 30000;
+
+    /// <summary>
+    /// Try waiting for a process to be idle and responsive to input.
+    /// </summary>
+    /// <param name="process">The target process.</param>
+    /// <param name="timeoutMs">The maximum time to wait in milliseconds.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Whether or not an idle state was detected.</returns>
+    public static async Task<bool> TryWaitForIdleAsync(this Process process, int timeoutMs, CancellationToken cancellationToken)
+    {
+        if (process.HasGUI())
+        {
+            var sw = Stopwatch.StartNew();
+            timeoutMs = Math.Min(timeoutMs, MaxWaitForIdleTimeoutMs); // Limit to MaxWaitForIdleTimeoutMs
+
+            var incrementMs = Math.Min(timeoutMs, 50); // Divide into max 50ms chunks
+
+            while (!cancellationToken.IsCancellationRequested && (sw.ElapsedMilliseconds < timeoutMs))
+            {
+                try
+                {
+                    if (process.WaitForInputIdle(incrementMs) == true && process.Responding == true)
+                    {
+                        return true;
+                    }
+                }
+                catch { }
+                await Task.Yield();
+            }
+        }
+
+        return false;
+    }
+
+    extension(Process)
+    {
+        /// <summary>
+        /// Try to launch the app specified by the given Application User Model Id (AUMID) and return the started process.
+        /// </summary>
+        /// <param name="applicationUserModelId">The target Application User Model Id (AUMID).</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The started process.</returns>
+        public static async Task<Process?> StartByApplicationModelUserIdAsync(string applicationUserModelId, CancellationToken cancellationToken)
+        {
+            // See: https://github.com/microsoft/WindowsAppSDK/discussions/2747
+            // Note: This code required us to specify a specific Windows Version TFM
+            PackageManager packageManager = new();
+
+            AppListEntry? appListEntry = null;
+
+            foreach (var package in WindowsIdentity.IsRunningAsAdmin ? packageManager.FindPackages() : packageManager.FindPackagesForUser(string.Empty))
+            {
+                if (package is not null)
+                {
+                    var entries = await package.GetAppListEntriesAsync();
+                    if (entries is not null)
+                    {
+                        foreach (var entry in entries)
+                        {
+                            if (entry.AppUserModelId == applicationUserModelId)
+                            {
+                                appListEntry = entry;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (appListEntry is not null)
+                {
+                    break;
+                }
+            }
+
+            if (appListEntry is not null && await appListEntry.LaunchAsync())
+            {
+                return await appListEntry.LaunchAndGetProcessAsync(cancellationToken);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Try to launch the app specified by the given Package Full Name (PFN) and return the started process.
+        /// </summary>
+        /// <param name="packageFullName">The target Package Full Name (PFN).</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The started process.</returns>
+        public static async Task<Process?> StartByPackageFullNameAsync(string packageFullName, CancellationToken cancellationToken) => await StartByPackageFullNameAsync(packageFullName, null, cancellationToken);
+
+        /// <summary>
+        /// Try to launch the app specified by the given Application User Model Id (AUMID) of the given Package Full Name (PFN) and return the started process.
+        /// </summary>
+        /// <param name="packageFullName">The target Package Full Name (PFN).</param>
+        /// <param name="applicationUserModelId">The target Application User Model Id (AUMID).</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The started process.</returns>
+        public static async Task<Process?> StartByPackageFullNameAsync(string packageFullName, string? applicationUserModelId, CancellationToken cancellationToken)
+        {
+            // See: https://github.com/microsoft/WindowsAppSDK/discussions/2747
+            // Note: This code required us to specify a specific Windows Version TFM
+            PackageManager packageManager = new();
+
+            var package = WindowsIdentity.IsRunningAsAdmin ? packageManager.FindPackage(packageFullName) : packageManager.FindPackageForUser(string.Empty, packageFullName);
+
+            if (package is not null)
+            {
+                var entries = await package.GetAppListEntriesAsync();
+                if (entries is not null && entries.Count > 0)
+                {
+                    var appListEntry = applicationUserModelId is null ? entries[0] : entries.Where(entry => entry.AppUserModelId == applicationUserModelId).FirstOrDefault();
+                    if (appListEntry is not null)
+                    {
+                        return await appListEntry.LaunchAndGetProcessAsync(cancellationToken);
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
     /// <summary>
