@@ -18,6 +18,8 @@ using YamlDotNet.Serialization;
 
 namespace FrameworkDetector.CLI;
 
+using DocFile = (DocMetadata Metadata, string MarkdownContents);
+
 public partial class CliApp
 {
     /// <summary>
@@ -68,16 +70,9 @@ public partial class CliApp
                     PrintInfo("Docs found for \"{0}\":", frameworkId);
 
                     // Print out metadata table first
-                    // TODO: Maybe abstract to share one configured deserializer?
-                    var deserializer = new DeserializerBuilder()
-                        .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
-                        .Build();
-
-                    var docParts = frameworkDoc.Split("---", StringSplitOptions.RemoveEmptyEntries);
-
-                    if (docParts.FirstOrDefault() is string yamlPart) // Do we only want this on detailed or not below normal? && Verbosity == VerbosityLevel.Detailed
+                    if (Verbosity >= VerbosityLevel.Normal)
                     {
-                        var metadata = deserializer.Deserialize<DocMetadata>(yamlPart);
+                        var metadata = frameworkDoc.Metadata;
 
                         var table = ConsoleTable.From(new KeyValuePair<string, object?>[]
                         {
@@ -97,7 +92,7 @@ public partial class CliApp
                     }
 
                     // Print rest of the markdown document
-                    PrintMarkdown(docParts[^1]);
+                    PrintMarkdown(frameworkDoc.MarkdownContents);
                     return (int)ExitCode.Success;
                 }
                 else if (Services.GetRequiredService<DetectionEngine>()
@@ -120,11 +115,6 @@ public partial class CliApp
 
     private void PrintFrameworksById()
     {
-        // Docs: https://github.com/aaubry/YamlDotNet/wiki/Serialization.Deserializer
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
-            .Build();
-
         // TODO: Maybe tailor table display on verbosity?
         var table = new ConsoleTable("FrameworkId",
                                      "Framework Description",
@@ -142,14 +132,7 @@ public partial class CliApp
             var frameworkId = detector.Info.FrameworkId;
             var frameworkDescription = detector.Info.Description;
             var hasDocs = FrameworkDocsById.ContainsKey(frameworkId.ToLowerInvariant());
-            DocMetadata? metadata = null;
-
-            // Try to get more descriptive title from the doc metadata
-            if (hasDocs &&
-                FrameworkDocsById[frameworkId.ToLowerInvariant()].Split("---", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() is string frameworkDoc)
-            {
-                metadata = deserializer.Deserialize<DocMetadata>(frameworkDoc);
-            }
+            var metadata = hasDocs ? FrameworkDocsById[frameworkId.ToLowerInvariant()].Metadata : null;
 
             table.AddRow(frameworkId,
                          frameworkDescription,
@@ -163,18 +146,24 @@ public partial class CliApp
         table.Write(Format.MarkDown);
     }
 
-    private Dictionary<string, string> FrameworkDocsById
+    private Dictionary<string, DocFile> FrameworkDocsById
     {
         get
         {
             if (_frameworkDocsById is null)
             {
-                _frameworkDocsById = new Dictionary<string, string>();
+                // Docs: https://github.com/aaubry/YamlDotNet/wiki/Serialization.Deserializer
+                var deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
+                    .Build();
+
+                _frameworkDocsById = new Dictionary<string, DocFile>();
 
                 foreach (var resourceName in AssemblyInfo.ToolAssembly.GetManifestResourceNames())
                 {
                     var filename = Path.GetFileName(resourceName);
-                    if (Path.GetExtension(filename) == ".md")
+                    if (Path.GetExtension(filename) == ".md" 
+                        && !filename.EndsWith("FrameworkDetectionTemplate.md"))
                     {
                         var docStream = AssemblyInfo.ToolAssembly.GetManifestResourceStream(resourceName);
 
@@ -182,8 +171,39 @@ public partial class CliApp
                         {
                             using var reader = new StreamReader(docStream);
 
-                            var frameworkId = filename.Split('.')[^2].ToLowerInvariant();
-                            _frameworkDocsById[frameworkId] = reader.ReadToEnd();
+                            DocMetadata? metadata = null;
+
+                            var contents = reader.ReadToEnd();
+                            var parts = contents.Split("---", StringSplitOptions.RemoveEmptyEntries);
+
+                            // Try to read YAML Frontmatter of doc
+                            if (parts.Length > 1 
+                                && parts.FirstOrDefault() is string yamlMetadata)
+                            {
+                                try
+                                {
+                                    metadata = deserializer.Deserialize<DocMetadata>(yamlMetadata);
+                                }
+                                catch (Exception ex)
+                                {
+                                    PrintWarning("Failed to parse doc metadata for {0}: {1}", filename, ex.Message);
+                                }
+
+                                // Ensure we have a FrameworkId
+                                metadata.FrameworkId ??= filename.Split('.')[^2];
+                            }
+                            else
+                            {
+                                metadata = new DocMetadata()
+                                {
+                                    FrameworkId = filename.Split('.')[^2],
+                                    Title = "Unknown Title",
+                                    Description = "No Description",
+                                };
+                            }
+
+                            var frameworkId = metadata.FrameworkId.ToLowerInvariant();
+                            _frameworkDocsById[frameworkId] = (metadata, parts.Last());
                         }
                     }
                 }
@@ -192,31 +212,5 @@ public partial class CliApp
         }
     }
 
-    private Dictionary<string, string>? _frameworkDocsById = null;
-
-    private record DocMetadata
-    {
-        [YamlMember(Alias = "id")]
-        public string? FrameworkId { get; init; }
-
-        public string? Title { get; init; }
-
-        public string? Description { get; init; }
-
-        // TODO: Actual Uri type not supported in AOT by YamlDotNet without explicit converter
-        // https://github.com/aaubry/YamlDotNet/issues/1030
-        public string? Source { get; init; }
-
-        public string? Website { get; init; }
-
-        public DetectorCategory Category { get; init; }
-
-        // TODO: Converter to list of strings as CSV
-        public string? Keywords { get; init; }
-
-        [YamlMember(Alias = "ms.date")]
-        public DateTimeOffset? Date { get; init; }
-
-        public string? Author { get; init; }
-    }
+    private Dictionary<string, DocFile>? _frameworkDocsById = null;
 }
