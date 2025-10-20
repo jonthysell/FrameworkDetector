@@ -12,7 +12,7 @@ namespace FrameworkDetector.CLI;
 public record DocMetadata
 {
     [YamlMember(Alias = "id")]
-    public string? FrameworkId { get; set; }
+    public string? DetectorId { get; set; }
 
     public string? Title { get; init; }
 
@@ -39,12 +39,11 @@ public record DocMetadata
 
 public enum DocStatus
 {
-    // Indicates no doc exists or could be loaded for the corresponding Detector
-    Unwritten,
     // Indicates a doc exists but no corresponding Detector does yet
     Placeholder,
-    // Used for in-progress docs/detector that are not verified completely for accuracy
-    Draft,
+    // Indicates either a Detector exists where no doc exists or could be loaded for the corresponding Detector
+    // But also used for in-progress docs/detector that are not verified completely for accuracy
+    Experimental,
     // Used for completed docs that have been verified for accuracy
     Detectable
 }

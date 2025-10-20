@@ -65,7 +65,7 @@ public partial class CliApp
             }
             else
             {
-                if (FrameworkDocsById.TryGetValue(frameworkId, out var frameworkDoc))
+                if (DetectorDocsById.TryGetValue(frameworkId, out var frameworkDoc))
                 {
                     PrintInfo("Docs found for \"{0}\":", frameworkId);
 
@@ -76,7 +76,7 @@ public partial class CliApp
 
                         var table = ConsoleTable.From(new KeyValuePair<string, object?>[]
                         {
-                            new ("FrameworkId", metadata.FrameworkId),
+                            new ("FrameworkId", metadata.DetectorId),
                             new ("Title", metadata.Title),
                             new ("Description", metadata.Description),
                             new ("Category", metadata.Category),
@@ -117,68 +117,49 @@ public partial class CliApp
     private void PrintFrameworksById()
     {
         // TODO: Maybe tailor table display on verbosity?
-        var table = new ConsoleTable("FrameworkId",
-                                     "Framework Description",
-                                     "Docs",
+        var table = new ConsoleTable("DetectorId",
+                                     "Title",
+                                     "Status",
                                      "Doc Updated",
                                      "Source Repo");
 
         table.Options.EnableCount = false;
 
-        var engine = Services.GetRequiredService<DetectionEngine>();
-
-        foreach (var detector in engine.Detectors.OrderBy(d => d.Info.FrameworkId))
+        foreach (var (detectorId, doc) in DetectorDocsById
+            .OrderBy(d => d.Key))
         {
-            var frameworkId = detector.Info.FrameworkId;
-            var frameworkDescription = detector.Info.Description;
-            DocMetadata metadata = null;
-            if (FrameworkDocsById.TryGetValue(frameworkId.ToLowerInvariant(), out var docFile))
-            {
-                metadata = docFile.Metadata;
-            }
-            else
-            {
-                metadata = new DocMetadata()
-                {
-                    FrameworkId = frameworkId,
-                    Title = detector.Info.Name,
-                    Description = detector.Info.Description,
-                    Status = DocStatus.Unwritten,
-                };
-            }
-
-            table.AddRow(frameworkId,
-                         frameworkDescription,
-                         metadata.Status switch 
+            table.AddRow(doc.Metadata.DetectorId,
+                         doc.Metadata.Title,
+                         doc.Metadata.Status switch
                          {
                              DocStatus.Detectable => "✅",
-                             DocStatus.Draft => "🏗️",
-                             DocStatus.Placeholder => "🔮",
-                             DocStatus.Unwritten => "🟥",
+                             DocStatus.Experimental => "🧪",
+                             DocStatus.Placeholder => "🟥",
                              _ => "?"
                          },
-                         string.Format("{0:MM/dd/yyyy}", metadata?.Date),
-                         metadata?.Source?.Replace("https://", "").Replace("github.com/", ""));
+                         string.Format("{0:MM/dd/yyyy}", doc.Metadata?.Date),
+                         doc.Metadata?.Source?.Replace("https://", "").Replace("github.com/", ""));
         }
 
         Console.WriteLine();
         table.Write(Format.MarkDown);
 
-        Console.WriteLine("✅ Detectable, 🏗️ Draft, 🔮 Placeholder, 🟥 Unwritten");
+        Console.WriteLine("✅ Detectable, 🧪 Experimental, 🟥 Placeholder");
     }
 
-    private Dictionary<string, DocFile> FrameworkDocsById
+    // Key is lowercase FrameworkId with associated DocFile
+    private Dictionary<string, DocFile> DetectorDocsById
     {
         get
         {
-            if (_frameworkDocsById is null)
+            if (_detectorDocsById is null)
             {
                 // Docs: https://github.com/aaubry/YamlDotNet/wiki/Serialization.Deserializer
                 var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
                     .Build();
 
-                _frameworkDocsById = new Dictionary<string, DocFile>();
+                _detectorDocsById = new Dictionary<string, DocFile>();
 
                 foreach (var resourceName in AssemblyInfo.ToolAssembly.GetManifestResourceNames())
                 {
@@ -206,13 +187,7 @@ public partial class CliApp
                                     metadata = deserializer.Deserialize<DocMetadata>(yamlMetadata);
 
                                     // Ensure we have a FrameworkId
-                                    metadata.FrameworkId ??= filename.Split('.')[^2];
-
-                                    // If we have metadata the doc can't be unwritten, it's property wasn't set so leave it as Draft
-                                    if (metadata.Status == DocStatus.Unwritten)
-                                    {
-                                        metadata.Status = DocStatus.Draft;
-                                    }
+                                    metadata.DetectorId ??= filename.Split('.')[^2];
                                 }
                                 catch (Exception ex)
                                 {
@@ -222,24 +197,46 @@ public partial class CliApp
 
                             if (metadata is null)
                             {
+                                // Assume docs with no YAML are placeholders
                                 metadata = new DocMetadata()
                                 {
-                                    FrameworkId = filename.Split('.')[^2],
+                                    DetectorId = filename.Split('.')[^2],
                                     Title = "Unknown Title",
                                     Description = "No Description",
-                                    Status = DocStatus.Draft,
+                                    Status = DocStatus.Placeholder,
                                 };
                             }
 
-                            var frameworkId = metadata.FrameworkId!.ToLowerInvariant();
-                            _frameworkDocsById[frameworkId] = (metadata, parts.Last());
+                            var detectorId = metadata.DetectorId!.ToLowerInvariant();
+                            _detectorDocsById[detectorId] = (metadata, parts.Last());
                         }
                     }
                 }
+
+                // Now loop through detectors to find any without docs and add placeholder entries
+                var engine = Services.GetRequiredService<DetectionEngine>();
+
+                foreach (var detector in engine.Detectors.OrderBy(d => d.Info.FrameworkId))
+                {
+                    var detectorId = detector.Info.FrameworkId.ToLowerInvariant();
+                    if (!_detectorDocsById.ContainsKey(detectorId))
+                    {
+                        // If we have a Detector with no docs, then we're in the experimental phase as we have some sort of code running, it just may not be accurate across all scenarios yet.
+                        var placeholderMetadata = new DocMetadata()
+                        {
+                            DetectorId = detector.Info.FrameworkId,
+                            Title = detector.Info.Name,
+                            Description = detector.Info.Description,
+                            Status = DocStatus.Experimental,
+                        };
+
+                        _detectorDocsById[detectorId] = (placeholderMetadata, $"# {detector.Info.Name}\n\n_Docs not yet written for this detector. Results for this detector should not be relied upon._");
+                    }
+                }
             }
-            return _frameworkDocsById;
+            return _detectorDocsById;
         }
     }
 
-    private Dictionary<string, DocFile>? _frameworkDocsById = null;
+    private Dictionary<string, DocFile>? _detectorDocsById = null;
 }
