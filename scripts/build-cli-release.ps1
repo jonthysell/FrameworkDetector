@@ -1,0 +1,27 @@
+param(
+    [string] $OutputRoot = ".\bld",
+    [boolean]$Clean = $True
+)
+
+[string] $RepoRoot = Resolve-Path "$PSScriptRoot\.."
+
+$StartingLocation = Get-Location
+Set-Location -Path $RepoRoot
+
+Write-Host "Build FrameworkDetector.CLI release..."
+try {
+    $TargetOutputDirectory = "FrameworkDetector"
+
+    if ($Clean -and (Test-Path "$OutputRoot\$TargetOutputDirectory")) {
+        Write-Host "Clean output folder..."
+        Remove-Item "$OutputRoot\$TargetOutputDirectory" -Recurse | Out-Null
+    }
+
+    New-Item -Path "$OutputRoot\$TargetOutputDirectory" -ItemType "directory" | Out-Null
+    dotnet msbuild -target:Publish -p:RuntimeIdentifier=win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:SelfContained=true -restore -p:Configuration=Release -p:PublishDir="$RepoRoot\$OutputRoot\$TargetOutputDirectory" "$RepoRoot\src\FrameworkDetector.sln"
+    if (!$?) {
+    	throw 'Build failed!'
+    }
+} finally {
+    Set-Location -Path "$StartingLocation"
+}

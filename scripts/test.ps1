@@ -1,4 +1,5 @@
 param(
+    [string]$Configuration = "Debug"
 )
 
 [string] $RepoRoot = Resolve-Path "$PSScriptRoot\.."
@@ -6,15 +7,12 @@ param(
 $StartingLocation = Get-Location
 Set-Location -Path $RepoRoot
 
-Write-Host "Test release..."
-try
-{
-    dotnet test "$RepoRoot\src\FrameworkDetector.sln"
+Write-Host "Test FrameworkDetector..."
+try {
+    dotnet test --configuration $Configuration "$RepoRoot\src\FrameworkDetector.sln"
     if (!$?) {
     	throw 'Tests failed!'
     }
-}
-finally
-{
+} finally {
     Set-Location -Path "$StartingLocation"
 }

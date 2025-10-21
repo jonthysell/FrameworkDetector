@@ -9,18 +9,16 @@ A library and set of tools for detecting the frameworks and components used to b
 
 ## Build
 
-Use the build script to create a self-contained `FrameworkDetector.CLI.exe` tool:
+Use the `build.ps1` script to build the project:
 
 ```ps
-scripts\build.ps1
+pwsh scripts\build.ps1
 ```
-
-It will be available in the `bld\` folder.
 
 Otherwise you can manually build the solution at `src\FrameworkDetector.sln` with Visual Studio or on the command-line:
 
 ```ps
-dotnet msbuild ./src/FrameworkDetector.sln
+dotnet build ./src/FrameworkDetector.sln
 ```
 
 You can also navigate to the `src\FrameworkDetector.CLI` folder and use the dotnet run command:
@@ -31,10 +29,10 @@ dotnet run [parameters]
 
 ## Test
 
-Use the test script to run all tests:
+Use the `test.ps1` script to run all tests:
 
 ```ps
-scripts\test.ps1
+pwsh scripts\test.ps1
 ```
 
 Otherwise you can manually test in Visual Studio or on the command-line:
@@ -42,6 +40,16 @@ Otherwise you can manually test in Visual Studio or on the command-line:
 ```ps
 dotnet test ./src/FrameworkDetector.sln
 ```
+
+## Build CLI Release
+
+Use the `build-cli-release.ps1` script to create a self-contained `FrameworkDetector.CLI.exe` tool:
+
+```ps
+pwsh scripts\build-cli-release.ps1
+```
+
+It will be available in the `bld\` folder.
 
 ## Usage
 
