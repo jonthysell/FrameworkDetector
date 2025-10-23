@@ -23,7 +23,18 @@ internal static class ConsoleTableExtensions
             throw new ArgumentOutOfRangeException(nameof(columnIndex));
         }
 
-        table.MaxWidth = table.Rows.Max(r => (r[columnIndex] ?? table.Columns[columnIndex])?.ToString()?.Length ?? MinimumColumnWidth);
+        int maxWidth = MinimumColumnWidth;
+
+        if (table.Rows.Count == 0)
+        {
+            maxWidth = Math.Max(maxWidth, (table.Columns[columnIndex].ToString() ?? "").Length);
+        }
+        else
+        {
+            maxWidth = Math.Max(maxWidth, table.Rows.Max(r => (r[columnIndex].ToString() ?? "").Length));
+        }
+        
+        table.MaxWidth = maxWidth;
     }
 
     /// <summary>
