@@ -99,22 +99,14 @@ public partial class CliApp
 
                 if (!string.IsNullOrEmpty(processName))
                 {
-                    if (waitTime > 0)
+                    var newProcess = await TryReattachAsync(processName, waitTime, cancellationToken);
+                    if (newProcess is null)
                     {
-                        PrintInfo("Waiting an additional {0}ms before looking for new process...", waitTime);
-                        await Task.Delay(waitTime, cancellationToken);
-                        waitTime = 0; // Don't need to wait twice
-                    }
-
-                    if (TryGetSingleProcessByName(processName, out var newProcess) && newProcess is not null)
-                    {
-                        process = newProcess;
-                    }
-                    else
-                    {
-                        PrintError("Unable to re-attach to process with name \"{0}\".", processName);
                         return (int)ExitCode.ArgumentParsingError;
                     }
+
+                    process = newProcess;
+                    waitTime = 0; // Don't need to wait twice
                 }
 
                 return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, cancellationToken);
@@ -155,6 +147,18 @@ public partial class CliApp
                     return (int)ExitCode.ArgumentParsingError;
                 }
 
+                if (!string.IsNullOrEmpty(processName))
+                {
+                    var newProcess = await TryReattachAsync(processName, waitTime, cancellationToken);
+                    if (newProcess is null)
+                    {
+                        return (int)ExitCode.ArgumentParsingError;
+                    }
+
+                    process = newProcess;
+                    waitTime = 0; // Don't need to wait twice
+                }
+
                 return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, cancellationToken);
             }
 
@@ -165,6 +169,25 @@ public partial class CliApp
         });
 
         return command;
+    }
+
+    private async Task<Process?> TryReattachAsync(string processName, int waitTime, CancellationToken cancellationToken)
+    {
+        if (waitTime > 0)
+        {
+            PrintInfo("Waiting an additional {0}ms before looking for new process...", waitTime);
+            await Task.Delay(waitTime, cancellationToken);
+        }
+
+        if (TryGetSingleProcessByName(processName, out var newProcess) && newProcess is not null)
+        {
+            return newProcess;
+        }
+        else
+        {
+            PrintError("Unable to re-attach to process with name \"{0}\".", processName);
+        }
+        return null;
     }
 
     private async Task<ExitCode> InspectStartedProcessAsync(Process process, int waitTime, string? outputFilename, CancellationToken cancellationToken)
