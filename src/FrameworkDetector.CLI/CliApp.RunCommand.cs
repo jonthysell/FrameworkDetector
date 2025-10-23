@@ -44,6 +44,11 @@ public partial class CliApp
             Description = "Save the inspection report as JSON to the given filename.",
         };
 
+        Option<string?> processNameOption = new("--processName")
+        {
+            Description = "The name of the process to inspect after launching (useful if different from the entry process).",
+        };
+
         var command = new Command("run", "Inspect a process/package provided to run first")
         {
             pathOption,
@@ -51,6 +56,7 @@ public partial class CliApp
             aumidOption,
             waitTimeOption,
             outputFileOption,
+            processNameOption,
         };
         command.TreatUnmatchedTokensAsErrors = true;
 
@@ -72,6 +78,7 @@ public partial class CliApp
             var aumid = parseResult.GetValue(aumidOption);
             var waitTime = parseResult.GetValue(waitTimeOption) ?? 2000;
             var outputFilename = parseResult.GetValue(outputFileOption);
+            var processName = parseResult.GetValue(processNameOption);
 
             if (exepath is not null)
             {
@@ -88,6 +95,26 @@ public partial class CliApp
                 {
                     PrintError("Unable to find/start program at \"{0}\".", exepath);
                     return (int)ExitCode.ArgumentParsingError;
+                }
+
+                if (!string.IsNullOrEmpty(processName))
+                {
+                    if (waitTime > 0)
+                    {
+                        PrintInfo("Waiting an additional {0}ms before looking for new process...", waitTime);
+                        await Task.Delay(waitTime, cancellationToken);
+                        waitTime = 0; // Don't need to wait twice
+                    }
+
+                    if (TryGetSingleProcessByName(processName, out var newProcess) && newProcess is not null)
+                    {
+                        process = newProcess;
+                    }
+                    else
+                    {
+                        PrintError("Unable to re-attach to process with name \"{0}\".", processName);
+                        return (int)ExitCode.ArgumentParsingError;
+                    }
                 }
 
                 return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, cancellationToken);

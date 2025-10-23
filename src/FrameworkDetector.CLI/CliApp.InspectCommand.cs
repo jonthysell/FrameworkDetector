@@ -74,42 +74,12 @@ public partial class CliApp
                     return (int)ExitCode.Success;
                 }
             }
-            else if (!string.IsNullOrWhiteSpace(processName))
+            else if (!string.IsNullOrWhiteSpace(processName) && TryGetSingleProcessByName(processName, out var process) && process is not null)
             {
-                var processes = Process.GetProcessesByName(processName);
-
-                if (processes.Length == 0)
-                {
-                    PrintError("Unable to find process with name \"{0}\".", processName);
-                }
-                else if (processes.Length > 1)
-                {
-                    //TODO: figure out how to handle inspecting multiple processes and how to output the results.
-                    PrintWarning("More than one process with name \"{0}\":", processName);
-                    foreach (var process in processes)
-                    {
-                        PrintWarning("  {0}({1})", process.ProcessName, process.Id);
-                    }
-
-                    if (processes.TryGetRootProcess(out var rootProcess) && rootProcess is not null)
-                    {
-                        PrintWarning("Determined root process {0}({1}).\n", rootProcess.ProcessName, rootProcess.Id);
-                        if (await InspectProcessAsync(rootProcess, outputFilename, cancellationToken))
-                        {
-                            return (int)ExitCode.Success;
-                        }
-                    }
-                    else
-                    {
-                        PrintError("Please run again with the PID of the specific process you wish to inspect.");
-                    }
-                }
-                else if (await InspectProcessAsync(processes[0], outputFilename, cancellationToken))
+                if (await InspectProcessAsync(process, outputFilename, cancellationToken))
                 {
                     return (int)ExitCode.Success;
                 }
-
-                return (int)ExitCode.InspectFailed;
             }
 
             PrintError("Missing command arguments.");
@@ -119,6 +89,46 @@ public partial class CliApp
         });
 
         return command;
+    }
+
+    private bool TryGetSingleProcessByName(string processName, out Process? result)
+    {
+        PrintInfo("Searching for process named \"{0}\"...", processName);
+
+        var processes = Process.GetProcessesByName(processName);
+
+        if (processes.Length == 0)
+        {
+            PrintError("Unable to find process with name \"{0}\".", processName);
+        }
+        else if (processes.Length == 1)
+        {
+            PrintInfo("Found process {0}({1}).\n", processes[0].ProcessName, processes[0].Id);
+            result = processes[0];
+            return true;
+        }
+        else
+        {
+            PrintWarning("More than one process with name \"{0}\":", processName);
+            foreach (var process in processes)
+            {
+                PrintWarning("  {0}({1})", process.ProcessName, process.Id);
+            }
+
+            if (processes.TryGetRootProcess(out var rootProcess) && rootProcess is not null)
+            {
+                PrintInfo("Determined root process {0}({1}).\n", rootProcess.ProcessName, rootProcess.Id);
+                result = rootProcess;
+                return true;
+            }
+            else
+            {
+                PrintError("Unable to determine which process to inspect.");
+            }
+        }
+
+        result = default;
+        return false;
     }
 
     /// Encapsulation of initializing datasource and grabbing engine reference to kick-off a detection against all registered detectors (see ConfigureServices)
