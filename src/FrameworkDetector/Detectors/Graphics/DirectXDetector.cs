@@ -7,8 +7,8 @@ using FrameworkDetector.Engine;
 namespace FrameworkDetector.Detectors;
 
 /// <summary>
-/// Detector for the Win2D library.
-/// Built according to docs/Library/Win2D.md.
+/// Detector for the DirectX library.
+/// Built according to docs/Graphics/DirectX.md.
 /// </summary>
 public class DirectXDetector : IDetector
 {
