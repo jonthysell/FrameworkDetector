@@ -49,6 +49,12 @@ public partial class CliApp
             Description = "The name of the process to inspect after launching (useful if different from the entry process).",
         };
 
+        Option<bool> keepAfterInspectOption = new("--keepAfterInspect", "-keep")
+        {
+            Description = "Keep the started process running after inpecting.",
+            Arity = ArgumentArity.Zero, // Note: Flag only, no value
+        };
+
         var command = new Command("run", "Inspect a process/package provided to run first")
         {
             pathOption,
@@ -57,6 +63,7 @@ public partial class CliApp
             waitTimeOption,
             outputFileOption,
             processNameOption,
+            keepAfterInspectOption,
         };
         command.TreatUnmatchedTokensAsErrors = true;
 
@@ -79,6 +86,7 @@ public partial class CliApp
             var waitTime = parseResult.GetValue(waitTimeOption) ?? 2000;
             var outputFilename = parseResult.GetValue(outputFileOption);
             var processName = parseResult.GetValue(processNameOption);
+            var keepAfterInspect = parseResult.GetValue(keepAfterInspectOption);
 
             if (exepath is not null)
             {
@@ -109,7 +117,7 @@ public partial class CliApp
                     waitTime = 0; // Don't need to wait twice
                 }
 
-                return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, cancellationToken);
+                return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, keepAfterInspect, cancellationToken);
             }
             else if (!string.IsNullOrWhiteSpace(packageFullName))
             {
@@ -128,7 +136,7 @@ public partial class CliApp
                     return (int)ExitCode.ArgumentParsingError;
                 }
 
-                return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, cancellationToken);
+                return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, keepAfterInspect,cancellationToken);
             }
             else if (!string.IsNullOrWhiteSpace(aumid))
             {
@@ -159,7 +167,7 @@ public partial class CliApp
                     waitTime = 0; // Don't need to wait twice
                 }
 
-                return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, cancellationToken);
+                return (int)await InspectStartedProcessAsync(process, waitTime, outputFilename, keepAfterInspect, cancellationToken);
             }
 
             PrintError("Missing command arguments.");
@@ -190,7 +198,7 @@ public partial class CliApp
         return null;
     }
 
-    private async Task<ExitCode> InspectStartedProcessAsync(Process process, int waitTime, string? outputFilename, CancellationToken cancellationToken)
+    private async Task<ExitCode> InspectStartedProcessAsync(Process process, int waitTime, string? outputFilename, bool keepAfterInspect, CancellationToken cancellationToken)
     {
         PrintInfo($"Process {process.ProcessName}({process.Id}) started...");
 
@@ -200,11 +208,21 @@ public partial class CliApp
             await Task.Delay(waitTime, cancellationToken);
         }
 
-        if (await InspectProcessAsync(process, outputFilename, cancellationToken))
+        bool inspectResult = await InspectProcessAsync(process, outputFilename, cancellationToken);
+
+        if (!keepAfterInspect)
         {
-            return ExitCode.Success;
+            try
+            {
+                PrintInfo("Killing process {0}({1}) after inspect.", process.ProcessName, process.Id);
+                process.Kill();
+            }
+            catch
+            {
+                PrintError("Unable to kill {0}({1}) after inspect.", process.ProcessName, process.Id);
+            }
         }
 
-        return ExitCode.InspectFailed;
+        return inspectResult ? ExitCode.Success : ExitCode.InspectFailed;
     }
 }
