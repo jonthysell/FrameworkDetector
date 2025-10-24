@@ -40,6 +40,8 @@ TBD
 
 ## How to Detect
 
+**Implementation:** [DirectXDetector](/src/FrameworkDetector/Detectors/Graphics/DirectXDetector.cs)
+
 TBD
 
 ### Runtime Detection

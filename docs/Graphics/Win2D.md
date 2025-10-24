@@ -44,6 +44,8 @@ Win2D depends on either:
 
 ## How to Detect
 
+**Implementation:** [Win2DDetector](/src/FrameworkDetector/Detectors/Graphics/Win2DDetector.cs)
+
 TBD
 
 ### Runtime Detection
