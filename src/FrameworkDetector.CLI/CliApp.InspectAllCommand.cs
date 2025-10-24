@@ -111,7 +111,7 @@ public partial class CliApp
             ExitCode result = ExitCode.Success;
             int count = 0;
             int fails = 0;
-            foreach (var process in processesToInspect.OrderBy(p => p.MainWindowTitle))
+            foreach (var process in processesToInspect.OrderBy(p => p.ProcessName))
             {
                 string? outputFilename = string.IsNullOrEmpty(outputFolderName) ? null : Path.Combine(outputFolderName, FormatFileName(process, outputFileTemplate));
                 PrintInfo("Inspecting app {0} [{1}]({2}) {3:00.0}%", process.MainWindowTitle, process.ProcessName, process.Id, 100.0 * count++ / processesToInspect.Count);
