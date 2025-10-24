@@ -47,6 +47,8 @@ Other well-known applications using Qt:
 
 ## How to Detect
 
+**Implementation:** [QtDetector](/src/FrameworkDetector/Detectors/Frameworks/QtDetector.cs)
+
 TBD
 
 ### Runtime Detection

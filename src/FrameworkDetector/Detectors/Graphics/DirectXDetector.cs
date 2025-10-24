@@ -12,6 +12,7 @@ namespace FrameworkDetector.Detectors;
 /// </summary>
 public class DirectXDetector : IDetector
 {
+    // TODO: Should this be just scoped to Direct3D only? i.e. we should probably have separate detectors for each DirectX component (e.g. Direct2D, DirectWrite, etc...) and tie to parent detector? https://en.wikipedia.org/wiki/DirectX
     public string Name => nameof(DirectXDetector);
 
     public string Description => "DirectX";
@@ -31,6 +32,12 @@ public class DirectXDetector : IDetector
             // Note: Version is just host OS version?
             .Required("DirectX 12", checks => checks
                 .ContainsLoadedModule("D3D12.dll", checkForNgenModule: true).GetVersionFromModule(ModuleVersionType.ProductVersion))
+            .Required("DirectX 11", checks => checks
+                .ContainsLoadedModule("D3D11.dll", checkForNgenModule: true).GetVersionFromModule(ModuleVersionType.ProductVersion))
+            .Required("DirectX 10", checks => checks
+                .ContainsLoadedModule("D3D10.dll", checkForNgenModule: true).GetVersionFromModule(ModuleVersionType.ProductVersion))
+            .Required("DirectX 9", checks => checks
+                .ContainsLoadedModule("D3D9.dll", checkForNgenModule: true).GetVersionFromModule(ModuleVersionType.ProductVersion))
             .BuildDefinition();
     }
 }
