@@ -56,7 +56,7 @@ TODO: I'm not sure if we can get the DirectX Version ("Feature Level") the app i
 
 ### Static Detection
 
-It is not possible to definitively determine the use of Win2D by an app by detecting the presence or absence of the aforementioned module file(s) within the app's binaries. In the simplest case, any of the aforementioned module(s) could have been included mistakenly.
+It is not possible to definitively determine the use of DirectX by an app by detecting the presence or absence of the aforementioned module file(s) within the app's binaries. In the simplest case, any of the aforementioned module(s) could have been included mistakenly.
 
 ## Resources
 

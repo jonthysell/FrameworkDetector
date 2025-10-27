@@ -591,7 +591,7 @@ public static class ProcessExtensions
                         displayName = pkg.DisplayName;
                         description = pkg.Description;
                     }
-                    catch (Exception e)
+                    catch
                     {
                         // Sometimes this throws for some reason (0x80070490 not found?), so just ignore it
                         // Doesn't seem documented that exception can be thrown, only maybe empty pre-19041.

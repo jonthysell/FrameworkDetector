@@ -7,7 +7,7 @@ using FrameworkDetector.Engine;
 namespace FrameworkDetector.Detectors;
 
 /// <summary>
-/// Detector for Windows App SDK.
+/// Detector for Windows App SDK (WinAppSDK).
 /// Built according to TODO.
 /// </summary>
 public class WindowsAppSDKDetector : IDetector
@@ -16,7 +16,7 @@ public class WindowsAppSDKDetector : IDetector
 
     public string Description => "Windows App SDK";
 
-    public string FrameworkId => "WASDK";
+    public string FrameworkId => "WinAppSDK";
 
     public DetectorCategory Category => DetectorCategory.Framework;
 
@@ -31,7 +31,7 @@ public class WindowsAppSDKDetector : IDetector
             .Required("Dependent Package", checks => checks
                 .ContainsDependentPackage("Microsoft.WindowsAppRuntime").GetVersionFromPackageIdentity(PackageVersionType.FullNameSpecial))
             // Otherwise look for key modules
-            .Required("", checks => checks
+            .Required("Resources Module", checks => checks
                 .ContainsLoadedModule("Microsoft.Windows.ApplicationModel.Resources.dll"))
             .Required("Framework Package", checks => checks
                 .ContainsLoadedModule("Microsoft.WindowsAppRuntime.Bootstrap.dll"))
