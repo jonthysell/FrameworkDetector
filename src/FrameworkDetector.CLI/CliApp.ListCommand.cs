@@ -85,6 +85,17 @@ public partial class CliApp
                     Console.WriteLine($"FullName:  {package.Id.FullName}");
                     Console.WriteLine($"Installed: {package.InstalledDate}");
                     Console.WriteLine($"Location:  {package.InstalledLocation.Path}");
+
+                    var entries = await package.GetAppListEntriesAsync();
+                    if (entries is not null && entries.Count > 0)
+                    {
+                        Console.WriteLine("Applications [AUMID] DisplayName:");
+                        foreach (var entry in entries)
+                        {
+                            Console.WriteLine($"\t[{entry.AppUserModelId}] {entry.DisplayInfo.DisplayName}");
+                        }
+                    }
+
                     Console.WriteLine();
                 }
 
