@@ -11,7 +11,7 @@ author: michael-hawker
 status: Experimental
 ---
 
-# Qt (pronounced "cute")
+# Qt
 
 ## Summary
 
