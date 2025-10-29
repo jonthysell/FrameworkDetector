@@ -8,14 +8,14 @@ category: Framework
 keywords: Framework Detector, UI, Cross-Platform, C++
 ms.date: 10/20/2025
 author: michael-hawker
-status: Placeholder
+status: Experimental
 ---
 
-# Qt (pronounced "cute")
+# Qt
 
 ## Summary
 
-Qt is a cross-platform UI framework written in C++ which supports running apps on Linux, Windows, macOS, iOS, Android, and embedded systems.
+Qt (pronounced "cute") is a cross-platform UI framework written in C++ which supports running apps on Linux, Windows, macOS, iOS, Android, and embedded systems.
 
 It supports various other languages through various language bindings, like Python, Java, JavaScript, Rust, Go, C#, D, and Haskell.
 
@@ -46,6 +46,8 @@ Other well-known applications using Qt:
 - Mathematica
 
 ## How to Detect
+
+**Implementation:** [QtDetector](/src/FrameworkDetector/Detectors/Frameworks/QtDetector.cs)
 
 TBD
 

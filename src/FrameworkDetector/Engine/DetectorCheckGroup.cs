@@ -63,6 +63,10 @@ public interface IDetectorCheckGroup
     DetectorCheckGroup Get();
 }
 
+/// <summary>
+/// Abstract class wrapping <see cref="IDetectorCheckGroup"/> to allow check extensions to define extra methods for configuration of checks. E.g. providing the specification for returning the version of the detected framework.
+/// </summary>
+/// <param name="idcg"><see cref="IDetectorCheckGroup"/></param>
 public abstract class DetectorCheckGroupWrapper(IDetectorCheckGroup idcg) : IDetectorCheckGroup
 {
     internal IDetectorCheckGroup IDetectorCheckGroup = idcg;

@@ -26,6 +26,7 @@ public partial class CliApp
         services.AddSingleton<IDetector, AvaloniaDetector>();
         services.AddSingleton<IDetector, CEFDetector>();
         services.AddSingleton<IDetector, ComCtlDetector>();
+        services.AddSingleton<IDetector, DirectXDetector>();
         services.AddSingleton<IDetector, DotNetDetector>();
         services.AddSingleton<IDetector, DotNetCoreDetector>();
         services.AddSingleton<IDetector, DotNetFrameworkDetector>();
@@ -33,11 +34,15 @@ public partial class CliApp
         services.AddSingleton<IDetector, DUIDetector>();
         services.AddSingleton<IDetector, ElectronDetector>();
         services.AddSingleton<IDetector, MVVMToolkitDetector>();
+        services.AddSingleton<IDetector, QtDetector>();
         services.AddSingleton<IDetector, RNWDetector>();
-        services.AddSingleton<IDetector, WinUIDetector>();
+        services.AddSingleton<IDetector, WindowsCommunityToolkitDetector>();
         services.AddSingleton<IDetector, WebView1Detector>();
         services.AddSingleton<IDetector, WebView2Detector>();
+        services.AddSingleton<IDetector, WindowsAppSDKDetector>();
         services.AddSingleton<IDetector, WinFormsDetector>();
+        services.AddSingleton<IDetector, Win2DDetector>();
+        services.AddSingleton<IDetector, WinUIDetector>();
         services.AddSingleton<IDetector, WinUI2Detector>();
         services.AddSingleton<IDetector, WinUI3Detector>();
         services.AddSingleton<IDetector, WPFDetector>();
