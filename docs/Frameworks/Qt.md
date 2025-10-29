@@ -15,7 +15,7 @@ status: Experimental
 
 ## Summary
 
-Qt is a cross-platform UI framework written in C++ which supports running apps on Linux, Windows, macOS, iOS, Android, and embedded systems.
+Qt (pronounced "cute") is a cross-platform UI framework written in C++ which supports running apps on Linux, Windows, macOS, iOS, Android, and embedded systems.
 
 It supports various other languages through various language bindings, like Python, Java, JavaScript, Rust, Go, C#, D, and Haskell.
 
