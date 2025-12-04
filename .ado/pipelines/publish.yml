@@ -18,9 +18,10 @@ extends:
         image: windows-latest
         os: windows
     stages:
-    - stage: Build
+    - stage: BuildStage
       jobs:
-      - job: Build
+      - job: BuildFrameworkDetectorJob
+        displayName: Build FrameworkDetector NuGet and CLI
         pool:
           name: Azure-Pipelines-1ESPT-ExDShared
           image: windows-latest
@@ -52,3 +53,31 @@ extends:
                 displayName: 'Upload FrameworkDetector CLI Build Artifacts'
                 artifactName: FrameworkDetector.CLI
                 targetPath: $(Build.StagingDirectory)\FrameworkDetector.CLI
+    - stage: PublishStage
+      jobs:
+      - job: PublishFrameworkDetectorNuGetToInternalAdoJob
+        displayName: Publish FrameworkDetector.NuGet to ADO
+        pool:
+          name: Azure-Pipelines-1ESPT-ExDShared
+          image: windows-latest
+          os: windows
+          hostArchitecture: amd64
+        templateContext:
+            type: releaseJob
+            isProduction: false
+            inputs:
+            - input: pipelineArtifact
+              artifactName: FrameworkDetector.NuGet
+              targetPath: '$(Pipeline.Workspace)/FrameworkDetector.NuGet'
+        steps:
+        - checkout: none
+        - task: NuGetToolInstaller@1
+          displayName: 'Use NuGet '
+        - task: NuGetAuthenticate@1
+          displayName: NuGet Authentication for ADO
+        - task: CmdLine@2
+          displayName: NuGet push
+          inputs:
+            pwsh: |
+              nuget.exe push *.nupkg -ApiKey AzureArtifacts -Source $(INTERNAL_PUBLISH_AZURE_ARTIFACTS_FEED) -NonInteractive -Verbosity Detailed -SkipDuplicate -NoSymbols
+            workingDirectory: '$(Pipeline.Workspace)/FrameworkDetector.NuGet'
