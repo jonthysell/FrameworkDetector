@@ -4,31 +4,18 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FrameworkDetector.Models;
 
-public record WindowsBinaryMetadata(string Filename, 
+public record WindowsModuleMetadata(string Filename, 
                                     string? OriginalFilename = null, 
                                     string? FileVersion = null, 
                                     string? ProductName = null, 
-                                    string? ProductVersion = null) : FileMetadata(Filename)
+                                    string? ProductVersion = null,
+                                    bool IsLoaded = false) : FileMetadata(Filename, IsLoaded)
 {
-    public static new async Task<WindowsBinaryMetadata?> GetMetadataAsync(string? filename, CancellationToken cancellationToken)
+    public static WindowsModuleMetadata GetMetadata(string filename, bool isLoaded)
     {
-        if (filename is null)
-        {
-            throw new ArgumentNullException(nameof(filename));
-        }
-
-        await Task.Yield();
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return null;
-        }
-
         if (!Path.Exists(filename))
         {
             // Try to see if we're looking for a binary under a redirected path, i.e. C:\Windows\System32 but really it's under C:\Windows\SysWOW64
@@ -47,17 +34,18 @@ public record WindowsBinaryMetadata(string Filename,
             else
             {
                 // Give up, just return the filename since we can't find the actual file on disk
-                return new WindowsBinaryMetadata(Path.GetFileName(filename));
+                return new WindowsModuleMetadata(Path.GetFileName(filename));
             }
         }
 
         var fileVersionInfo = FileVersionInfo.GetVersionInfo(filename);
 
-        return new WindowsBinaryMetadata(Path.GetFileName(fileVersionInfo.FileName), 
+        return new WindowsModuleMetadata(Path.GetFileName(fileVersionInfo.FileName), 
             fileVersionInfo.OriginalFilename, 
             fileVersionInfo.FileVersion, 
             fileVersionInfo.ProductName, 
-            fileVersionInfo.ProductVersion);
+            fileVersionInfo.ProductVersion,
+            isLoaded);
     }
 
     private static bool TryFindRedirectedFile(string filename, Environment.SpecialFolder fromRoot, Environment.SpecialFolder toRoot, out string? newFilename)

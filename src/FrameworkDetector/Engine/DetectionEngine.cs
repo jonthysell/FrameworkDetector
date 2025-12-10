@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 using FrameworkDetector.Checks;
 using FrameworkDetector.DataSources;
+using FrameworkDetector.Inputs;
 using FrameworkDetector.Models;
 
 namespace FrameworkDetector.Engine;
@@ -41,26 +42,31 @@ public class DetectionEngine
         }
     }
 
-    public async Task<ToolRunResult> DetectAgainstSourcesAsync(DataSourceCollection sources, CancellationToken cancellationToken)
+    /// <summary>
+    /// Runs all configured detectors against the provided data sources asynchronously and returns the aggregated
+    /// detection results.
+    /// </summary>
+    /// <remarks>Detection progress is reported via the DetectionProgressChanged event after each detector
+    /// completes. If the operation is canceled, partial results are returned. This method is thread-safe and executes
+    /// detector checks in parallel for improved performance.</remarks>
+    /// <param name="sources">A collection of data sources to be analyzed by the detectors. Each source must be properly initialized and
+    /// contain the relevant data for detection.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the detection operation before completion.</param>
+    /// <param name="toolArguments">Optional arguments to record as being passed to the tool. null if no arguments metadata was provided.</param>
+    /// <returns>A ToolRunResult containing the results of all detector runs, including metadata and individual detector
+    /// outcomes.</returns>
+    /// <exception cref="ArgumentException">Thrown if any required or optional check group for a detector does not contain at least one check.</exception>
+    public async Task<ToolRunResult> DetectAgainstInputsAsync(IReadOnlyList<IInputType> inputs, CancellationToken cancellationToken, string? toolArguments = null)
     {
         int totalDetectors = _detectors.Count;
         int processedDetectors = 0;
         ConcurrentBag<DetectorResult> allDetectorResults = new();
 
-        var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion);
+        var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion, toolArguments, inputs);
 
         try
         {
-            // TODO: Do we want to have this be 1-step of progress?
-            // Step 1. Initialize all the data sources.
-            await Parallel.ForEachAsync(sources.Values.SelectMany(inner => inner), cancellationToken, async static (source, ct) =>
-            {
-                await source.LoadAndCacheDataAsync(ct);
-            });
-
-            result.AddDataSources(sources);
-
-            // Step 2. Run all the detectors against the data sources.
+            // Step 1. Run all the detectors against the data sources.
             await Parallel.ForEachAsync(_detectors, cancellationToken, async (detector, cancellationToken) =>
             {
                 // TODO: Probably parallelizing on the detectors is enough vs. each check
@@ -97,7 +103,7 @@ public class DetectionEngine
 
                     foreach (var requiredCheck in dcg)
                     {
-                        var innerResult = await requiredCheck.PerformCheckAsync(detector.Info, sources, cancellationToken);
+                        var innerResult = await requiredCheck.PerformCheckAsync(detector.Info, inputs, cancellationToken);
 
                         if (requiredCheck == dcg.CheckWhichProvidesVersion && string.IsNullOrEmpty(detectorResult.FrameworkVersion) && dcg.VersionGetter is not null)
                         {
@@ -141,7 +147,7 @@ public class DetectionEngine
 
                     foreach (var optionalCheck in dcg)
                     {
-                        var innerResult = await optionalCheck.PerformCheckAsync(detector.Info, sources, cancellationToken);
+                        var innerResult = await optionalCheck.PerformCheckAsync(detector.Info, inputs, cancellationToken);
 
                         detectorResult.CheckResults.Add(innerResult);
                     }
@@ -165,33 +171,26 @@ public class DetectionEngine
         }
         catch (TaskCanceledException) { } // If it gets canceled, return what we found anyway
 
-        // Step 3. Aggregate/Finalize all the results?
+        // Step 2. Aggregate/Finalize all the results?
         result.DetectorResults = allDetectorResults.ToList();
 
         return result;
     }
 
     /// <summary>
-    /// Dumps known info from DataSources without performing any detection logic.
+    /// Dumps all available known info from Inputs and Data Sources without performing any detection logic.
     /// </summary>
-    /// <param name="sources"></param>
+    /// <param name="inputs">List of <see cref="IInputType"/> inputs to process and dump.</param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="toolArguments">Metadata to record of arguments used to run the tool.</param>
+    /// <returns>Partial <see cref="ToolRunResult"/> object with data source information but without framework detection results.</returns>
     /// <exception cref="ArgumentException"></exception>
-    public async Task<ToolRunResult> DumpAgainstSourcesAsync(DataSourceCollection sources, CancellationToken cancellationToken)
+    public async Task<ToolRunResult> DumpAllDataFromInputsAsync(IReadOnlyList<IInputType> inputs, CancellationToken cancellationToken, string? toolArguments = null)
     {
-        var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion);
+        var result = new ToolRunResult(AssemblyInfo.ToolName, AssemblyInfo.ToolVersion, toolArguments, inputs);
 
         try
         {
-            // Step 1. Initialize all the data sources.
-            await Parallel.ForEachAsync(sources.Values.SelectMany(inner => inner), cancellationToken, async static (source, ct) =>
-            {
-                await source.LoadAndCacheDataAsync(ct);
-            });
-
-            result.AddDataSources(sources);
-
             // TODO: Is there more we have to do here atm?
         }
         catch (TaskCanceledException) { } // If it gets canceled, return what we found anyway

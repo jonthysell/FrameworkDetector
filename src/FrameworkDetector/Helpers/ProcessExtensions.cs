@@ -2,24 +2,25 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
 using System.Management;
-using PeNet;
 
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.Management.Deployment;
-using Windows.System;
 using Windows.System.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+
+using FrameworkDetector.Inputs;
+using FrameworkDetector.Models;
 
 namespace FrameworkDetector;
 
@@ -317,9 +318,9 @@ public static class ProcessExtensions
     /// </summary>
     /// <param name="process">The target process.</param>
     /// <returns>The metadata for each active window.</returns>
-    public static IEnumerable<ProcessWindowMetadata> GetActiveWindowMetadata(this Process process)
+    public static IEnumerable<ActiveWindowMetadata> GetActiveWindowMetadata(this Process process)
     {
-        var windows = new HashSet<ProcessWindowMetadata>();
+        var windows = new HashSet<ActiveWindowMetadata>();
 
         // The HWNDs for UWP apps are hidden as children under ApplicationFrameHost's top-level HWND,
         // so we'll need to make sure we check there if the target process is UWP (which we don't know)
@@ -335,7 +336,7 @@ public static class ProcessExtensions
 
                 if (className is not null || windowText is not null)
                 {
-                    windows.Add(new ProcessWindowMetadata(className,
+                    windows.Add(new ActiveWindowMetadata(className,
                                                           windowText,
                                                           hwnd.IsWindowVisible()));
                 }
@@ -395,100 +396,41 @@ public static class ProcessExtensions
     }
 
     /// <summary>
+    /// Gets a <see cref="FileInfo"/> object representing the <see cref="Process.MainModule"/> location of the process.
+    /// </summary>
+    /// <param name="process">The target process.</param>
+    /// <returns>FileInfo location of Main Module or null.</returns>
+    public static FileInfo? GetMainModuleFileInfo(this Process process)
+    {
+        if (process.MainModule is not null 
+            && process.MainModule.FileName is not null)
+        {
+            return new FileInfo(process.MainModule.FileName);
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Gets the metadata for the functions imported by the main module of the given process.
     /// </summary>
     /// <param name="process">The target process.</param>
     /// <returns>The metadata from each imported function.</returns>
-    public static IEnumerable<ProcessImportedFunctionsMetadata> ProcessImportedFunctionsMetadata(this Process process)
-    {
-        var importedFunctions = new HashSet<ProcessImportedFunctionsMetadata>();
-
-        if (process.MainModule is not null && process.MainModule.FileName is not null)
-        {
-            if (TryGetCachedPeFile(process.MainModule.FileName, out var peFile) && peFile is not null)
-            {
-                lock (peFile)
-                {
-                    var tempMap = new Dictionary<string, List<ProcessFunctionMetadata>>();
-
-                    if (peFile.ImportedFunctions is not null)
-                    {
-                        foreach (var importedFunction in peFile.ImportedFunctions)
-                        {
-                            if (!tempMap.TryGetValue(importedFunction.DLL, out var functions))
-                            {
-                                functions = new List<ProcessFunctionMetadata>();
-                                tempMap[importedFunction.DLL] = functions;
-                            }
-
-                            if (importedFunction.Name is not null)
-                            {
-                                tempMap[importedFunction.DLL].Add(new ProcessFunctionMetadata(importedFunction.Name, false));
-                            }
-                        }
-                    }
-
-                    if (peFile.DelayImportedFunctions is not null)
-                    {
-                        foreach (var delayImportedFunction in peFile.DelayImportedFunctions)
-                        {
-                            if (!tempMap.TryGetValue(delayImportedFunction.DLL, out var functions))
-                            {
-                                functions = new List<ProcessFunctionMetadata>();
-                                tempMap[delayImportedFunction.DLL] = functions;
-                            }
-
-                            if (delayImportedFunction.Name is not null)
-                            {
-                                tempMap[delayImportedFunction.DLL].Add(new ProcessFunctionMetadata(delayImportedFunction.Name, true));
-                            }
-                        }
-                    }
-
-                    foreach (var kvp in tempMap)
-                    {
-                        importedFunctions.Add(new ProcessImportedFunctionsMetadata(kvp.Key, kvp.Value.ToArray()));
-                    }
-                }
-            }
-        }
-
-        return importedFunctions;
-    }
+    public static IEnumerable<ImportedFunctionsMetadata> GetImportedFunctionsMetadata(this Process process) => process.GetMainModuleFileInfo()?.GetImportedFunctionsMetadata() ?? [];
 
     /// <summary>
     /// Gets the metadata for the functions exported by the main module of the given process.
     /// </summary>
     /// <param name="process">The target process.</param>
     /// <returns>The metadata from each exported function.</returns>
-    public static IEnumerable<ProcessExportedFunctionsMetadata> ProcessExportedFunctionsMetadata(this Process process)
-    {
-        var exportedFunctions = new HashSet<ProcessExportedFunctionsMetadata>();
+    public static IEnumerable<ExportedFunctionsMetadata> GetExportedFunctionsMetadata(this Process process) => process.GetMainModuleFileInfo()?.GetExportedFunctionsMetadata() ?? [];
 
-        if (process.MainModule is not null && process.MainModule.FileName is not null)
-        {
-            if (TryGetCachedPeFile(process.MainModule.FileName, out var peFile) && peFile is not null)
-            {
-                lock (peFile)
-                {
-                    if (peFile.ExportedFunctions is not null)
-                    {
-                        foreach (var exportedFunction in peFile.ExportedFunctions)
-                        {
-                            if (exportedFunction is not null && exportedFunction.Name is not null)
-                            {
-                                exportedFunctions.Add(new ProcessExportedFunctionsMetadata(exportedFunction.Name));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return exportedFunctions;
-    }
-
-    public static async Task<ProcessPackagedAppMetadata?> ProcessPackageMetadataAsync(this Process process)
+    /// <summary>
+    /// Gets a <see cref="Package"/> from a <see cref="Process"/>, used to help create a <see cref="InstalledPackageInput"/> from a <see cref="Process"/>.
+    /// </summary>
+    /// <param name="process"><see cref="Process"/> object to inspect.</param>
+    /// <returns><see cref="Package"/> corresponding to that process, if available. Otherwise null.</returns>
+    public static async Task<Package?> GetPackageFromProcess(this Process process)
     {
         var processInfo = ProcessDiagnosticInfo.TryGetForProcessId((uint)process.Id);
         if (processInfo is null || !processInfo.IsPackaged)
@@ -496,106 +438,39 @@ public static class ProcessExtensions
             return null;
         }
 
-        AppInfo? appInfo = null;
-        if (process.TryGetPackageFamilyName(out var packageFamilyName))
+        if (process.TryGetPackageFamilyName(out var packageFamilyName)
+            && !string.IsNullOrWhiteSpace(packageFamilyName))
         {
-            var packageInfo = await AppDiagnosticInfo.RequestInfoAsync();
-            foreach (var package in packageInfo)
-            {
-                if (package.AppInfo.PackageFamilyName == packageFamilyName)
-                {
-                    appInfo = package.AppInfo;
-                    break;
-                }
-            }
-            
-            if (appInfo is not null)
-            {
-                Package? package = null;
+            // Fallback for older windows versions
+            TryGetPackageFullName(process, out var packageFullName);
 
-                // Package property introduced 19041: https://learn.microsoft.com/uwp/api/windows.applicationmodel.appinfo.package
-                if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
-                {
-                    package = appInfo.Package;
-                }
-                else
-                {
-                    // Fallback for older windows versions
-                    if (TryGetPackageFullName(process, out var packageFullName))
-                    {
+            PackageManager packageManager = new();
 
-                        PackageManager packageManager = new();
+            var package = WindowsIdentity.IsRunningAsAdmin ? packageManager.FindPackage(packageFullName) : packageManager.FindPackageForUser(string.Empty, packageFullName);
 
-                        // 1. Find package by full name
-                        if (WindowsIdentity.IsRunningAsAdmin)
-                        {
-
-                            // https://learn.microsoft.com/uwp/api/windows.management.deployment.packagemanager.findpackage
-                            package = packageManager.FindPackage(packageFullName);
-                        }
-                        else
-                        {
-                            // Empty string == current user
-                            // https://learn.microsoft.com/uwp/api/windows.management.deployment.packagemanager.findpackageforuser
-                            package = packageManager.FindPackageForUser(string.Empty, packageFullName);
-                        }
-                    }
-                    else
-                    {
-                        // TODO: How do we bubble up warnings?
-                        // We can't find package, so we don't have extra info needed...
-                        return null;
-                    }
-                }
-
-                var packageMetadata = package is not null ? package.GetMetadata() : null;
-
-                return new ProcessPackagedAppMetadata(appInfo.DisplayInfo.DisplayName,
-                                                    appInfo.DisplayInfo.Description,
-                                                    appInfo.PackageFamilyName,
-                                                    packageMetadata);
-            }
+            return package;
         }
 
         return null;
     }
 
-    private static bool TryGetCachedPeFile(string filename, out PeFile? peFile)
+    public static async Task<PackagedAppMetadata?> ProcessPackageMetadataAsync(this Process process)
     {
-        PeFile? result = null;
-        lock (_cachedPeFiles)
+        var processInfo = ProcessDiagnosticInfo.TryGetForProcessId((uint)process.Id);
+        if (processInfo is null || !processInfo.IsPackaged)
         {
-            if (!_cachedPeFiles.TryGetValue(filename, out result))
-            {
-                // Cache whatever PeFile.TryParse gets, so we don't ever waste time reparsing a file
-                PeFile.TryParse(filename, out var newPeFile);
-                _cachedPeFiles.TryAdd(filename, newPeFile);
-                result = newPeFile;
-            }
-
-            peFile = result;
-            return result is not null;
+            return null;
         }
+
+        if (process.TryGetPackageFamilyName(out var packageFamilyName)
+            && !string.IsNullOrWhiteSpace(packageFamilyName))
+        {
+            // Fallback for older windows versions
+            TryGetPackageFullName(process, out var packageFullName);
+            
+            return await PackageExtensions.GetPackagedAppMetadataAsync(packageFamilyName, packageFullName);
+        }
+
+        return null;
     }
-
-    private static readonly ConcurrentDictionary<string, PeFile?> _cachedPeFiles = new ConcurrentDictionary<string, PeFile?>();
 }
-
-public record ProcessWindowMetadata(string? ClassName = null, string? Text = null, bool? IsVisible = null) { }
-
-public record ProcessFunctionMetadata(string Name, bool? DelayLoaded = null);
-
-public record ProcessImportedFunctionsMetadata(string ModuleName, ProcessFunctionMetadata[]? Functions = null) { }
-
-public record ProcessExportedFunctionsMetadata(string Name) : ProcessFunctionMetadata(Name);
-
-/// <summary>
-/// Wrapper around <see cref="PackageId"/>.
-/// </summary>
-public record PackageIdentity(string Architecture, string Name, string FamilyName, string FullName, string Publisher, string PublisherId, string ResourceId, string Version) { }
-
-public record PackageFlags(bool IsBundle, bool IsDevelopmentMode, bool IsFramework, bool IsOptional, bool IsResourcePackage, bool? IsStub) { }
-
-public record PackageMetadata(PackageIdentity Id, string PackagePublisherDisplayName, string PackageDisplayName, string PackageDescription, string InstalledPath, string PackageEffectiveExternalPath, string PackageEffectivePath, DateTimeOffset InstalledDate, PackageFlags Flags, PackageMetadata[] Dependencies) { }
-
-public record ProcessPackagedAppMetadata(string AppDisplayName, string AppDescription, string AppPackageFamilyName, PackageMetadata? PackageMetadata) { }

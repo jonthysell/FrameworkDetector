@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using static FrameworkDetector.Checks.ContainsActiveWindowCheck;
+using FrameworkDetector.Inputs;
 using FrameworkDetector.Models;
 
 namespace FrameworkDetector.Test.Checks;
@@ -38,19 +39,22 @@ public class ContainsActiveWindowCheckTest() : CheckTestBase<ContainsActiveWindo
 
     private async Task RunWindowClassTest(string[] actualWindowClassNames, string classNameToCheck, DetectorCheckStatus expectedCheckStatus, string? expectedWindowClassName)
     {
-        var actualWindows = actualWindowClassNames.Select(className => new ProcessWindowMetadata(className)).ToArray();
+        var actualWindows = actualWindowClassNames.Select(className => new ActiveWindowMetadata(className)).ToArray();
         var args = new ContainsActiveWindowArgs(classNameToCheck);
 
-        ContainsActiveWindowData? expectedOutput = expectedWindowClassName is not null ? new ContainsActiveWindowData(new ProcessWindowMetadata(expectedWindowClassName)) : null;
+        ContainsActiveWindowData? expectedOutput = expectedWindowClassName is not null ? new ContainsActiveWindowData(new ActiveWindowMetadata(expectedWindowClassName)) : null;
 
         var cts = new CancellationTokenSource();
 
         await RunTest(actualWindows, args, expectedCheckStatus, expectedOutput, cts.Token);
     }
 
-    private async Task RunTest(ProcessWindowMetadata[]? actualWindows, ContainsActiveWindowArgs args, DetectorCheckStatus expectedCheckStatus, ContainsActiveWindowData? expectedOutput, CancellationToken cancellationToken)
+    private async Task RunTest(ActiveWindowMetadata[]? actualWindows, ContainsActiveWindowArgs args, DetectorCheckStatus expectedCheckStatus, ContainsActiveWindowData? expectedOutput, CancellationToken cancellationToken)
     {
-        var dataSources = GetTestProcessDataSource(new ProcessMetadata(nameof(ContainsActiveWindowCheckTest), ActiveWindows: actualWindows));
-        await RunCheck_ValidArgsAsync(dataSources, args, expectedCheckStatus, expectedOutput, cancellationToken);
+        ProcessInput input = new(new(nameof(ContainsActiveWindowCheckTest)),
+                                 ActiveWindows: actualWindows ?? Array.Empty<ActiveWindowMetadata>(),
+                                 []);
+
+        await RunCheck_ValidArgsAsync([input], args, expectedCheckStatus, expectedOutput, cancellationToken);
     }
 }

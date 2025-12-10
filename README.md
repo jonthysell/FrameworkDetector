@@ -88,20 +88,16 @@ You can use `--filterWindowProcesses false` to inspect all processes. Some proce
 ### Inspect by Process Id (PID)
 
 ```ps
-FrameworkDetector.CLI.exe inspect --processId ###
-```
-
-*OR*
-
-```ps
-FrameworkDetector.CLI.exe inspect -pid ###
+FrameworkDetector.CLI.exe inspect process -id ###
 ```
 
 ### Inspect by Process Name
 
 ```ps
-FrameworkDetector.CLI.exe inspect --processName ###
+FrameworkDetector.CLI.exe inspect process -name ###
 ```
+
+// TODO: <File, package inspect examples>
 
 ### Run a Process and Inspect it
 
@@ -124,7 +120,7 @@ You can use the PowerShell `Get-AppxPackage` command to find the full package na
 Use the `-o` parameter to specify the output file (or folder for `all`). This will save detailed results in a JSON file format. E.g.
 
 ```ps
-FrameworkDetector.CLI.exe inspect -pid ### -o myresults.json
+FrameworkDetector.CLI.exe inspect process -id ### -o myresults.json
 ```
 
 When using the `all` command, a file will be created for each process in the folder specified by the `-o` parameter. You can use the `--outputFileTemplate` parameter to customize the resulting file names.
@@ -167,7 +163,9 @@ FrameworkDetector.CLI.exe docs WinUI3
 
 A library of detectors and an engine to run them against specific data sources (like processes) and provide a report of results.
 
-Key interfaces are `IDetector`, `IDataSource`, `ICheckDefinition`, and `IDetectorCheckResult`.
+Key interfaces are `IDetector`, `IDataSource`, `ICheckDefinition`, `IDetectorCheckResult`, and `IInputType`.
+
+#### Detectors
 
 A Fluent API surface is used to construct detectors. For instance, a basic `IDetector` implementation for WPF may look something like:
 
@@ -186,6 +184,16 @@ A Fluent API surface is used to construct detectors. For instance, a basic `IDet
 A Detector requires _at least_ one Required check group, but can have many. Any required check group that passes will indicate detection. All checks within a group must pass for that group to pass.
 
 Optional groups can also be defined, they have no impact on detection. They are not aggregated, just tagged with the group name.
+
+#### Inputs / Data Flow
+
+The CLI program (below) translates user intent to inspect a target application (e.g. by process id) and translates that to a CLR object, like `Process`.
+
+Within FrameworkDetector we have an `InputHelper` class which knows how to construct a collection of `IInputType` objects based on the target object for all the inputs that type can provide. For instance, a `Process` may be able to provide a `ProcessInput`, an `ExecutableInput` from its MainModule, and an `InstalledPackageInput` from the installed app registry on the system.
+
+Each `IInputType<T>` knows how to extract relevant data from the target object of type `T` via a factory method `CreateAndInitializeDataSourcesAsync`. This method extracts the required information to populate the various `IDataSource` interfaces for that input. It stores the DataSource information in various `*Metadata` records which are **not** dependent on the underlying CLR instances. This allows any `IInputType` object to be serialized easily and enables the FrameworkDetector to re-process detections later without having to have access to the original target of inspection.
+
+Inputs are then passed into the DetectionEngine and can be looped through by each type of check. Each check can easily identify the data it needs by inspecting if the `IInputType` implements the given `IDataSource` interface it requires.
 
 ### FrameworkDetector.CLI
 
