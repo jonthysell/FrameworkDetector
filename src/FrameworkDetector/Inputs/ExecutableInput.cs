@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ public record ExecutableInput(WindowsModuleMetadata ExecutableMetadata,
                               ImportedFunctionsMetadata[] ImportedFunctions,
                               ExportedFunctionsMetadata[] ExportedFunctions,
                               WindowsModuleMetadata[] ImportedModules,
+                              WindowsModuleMetadata[] DotNetModules,
                               IReadOnlyDictionary<string, IReadOnlyList<object>> CustomData) 
     : IEquatable<ExecutableInput>,
       IImportedFunctionsDataSource, 
@@ -47,7 +49,7 @@ public record ExecutableInput(WindowsModuleMetadata ExecutableMetadata,
         // Get functions imported by the executable
         var importedFunctions = executable.GetImportedFunctionsMetadata();
 
-        // Loop over Imported Functions to produce ModulesDataSource
+        // Loop over Imported Functions to get ImportedModules
         HashSet<WindowsModuleMetadata> importedModules = new();
         foreach (var function in importedFunctions)
         {
@@ -70,6 +72,80 @@ public record ExecutableInput(WindowsModuleMetadata ExecutableMetadata,
             importedModules.Add(moduleMetadata);
         }
 
+        // Loop over targets in .deps.json file to produce DotNetModules
+        HashSet<WindowsModuleMetadata> dotnetModules = new();
+        var depsJsonPath = Path.ChangeExtension(executable.FullName, ".deps.json");
+        if (File.Exists(depsJsonPath))
+        {
+            var executablePath = Path.GetDirectoryName(executable.FullName);
+
+            var depsJson = File.ReadAllText(depsJsonPath);
+            var depsJsonDoc = JsonDocument.Parse(depsJson);
+            if (depsJsonDoc.RootElement.TryGetProperty("targets", out var targets) && targets.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var target in targets.EnumerateObject())
+                {
+                    if (target.Value.ValueKind == JsonValueKind.Object)
+                    {
+                        foreach (var item in target.Value.EnumerateObject())
+                        {
+                            if (item.Value.ValueKind == JsonValueKind.Object)
+                            {
+                                // Get dotnet modules from runtime
+                                if (item.Value.TryGetProperty("runtime", out var runtime) && runtime.ValueKind == JsonValueKind.Object)
+                                {
+                                    foreach (var runtimeDep in runtime.EnumerateObject())
+                                    {
+                                        var filename = Path.GetFileName(runtimeDep.Name);
+                                        var fileVersion = runtimeDep.Value.ValueKind == JsonValueKind.Object && runtimeDep.Value.TryGetProperty("fileVersion", out var fileVersionElement) ? fileVersionElement.ToString() : null;
+
+                                        WindowsModuleMetadata? module = null;
+
+                                        // Try to look for local file
+                                        if (executablePath is not null)
+                                        {
+                                            var localPath = Path.Combine(executablePath, filename);
+                                            module = WindowsModuleMetadata.GetMetadata(localPath, false);
+                                        }
+
+                                        // Fallback with just data from .deps.json
+                                        module ??= module = new WindowsModuleMetadata(filename, FileVersion: fileVersion, IsLoaded: false);
+
+                                        dotnetModules.Add(module);
+                                    }
+                                }
+
+                                // Get native modules from native
+                                if (item.Value.TryGetProperty("native", out var native) && runtime.ValueKind == JsonValueKind.Object)
+                                {
+                                    foreach (var nativeDep in native.EnumerateObject())
+                                    {
+                                        var filename = Path.GetFileName(nativeDep.Name);
+                                        var fileVersion = nativeDep.Value.ValueKind == JsonValueKind.Object && nativeDep.Value.TryGetProperty("fileVersion", out var fileVersionElement) ? fileVersionElement.ToString() : null;
+
+                                        WindowsModuleMetadata? module = null;
+
+                                        // Try to look for local file
+                                        if (executablePath is not null)
+                                        {
+                                            var localPath = Path.Combine(executablePath, filename);
+                                            module = WindowsModuleMetadata.GetMetadata(localPath, false);
+                                        }
+
+                                        // Fallback with just data from .deps.json
+                                        module ??= module = new WindowsModuleMetadata(filename, FileVersion: fileVersion, IsLoaded: false);
+
+                                        dotnetModules.Add(module);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
         await Task.Yield();
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -86,7 +162,8 @@ public record ExecutableInput(WindowsModuleMetadata ExecutableMetadata,
         return new ExecutableInput(metadata,
                                    importedFunctions.OrderBy(f => f.ModuleName).ToArray(),
                                    exportedFunctions.OrderBy(f => f.Name).ToArray(),
-                                   importedModules.ToArray(),
+                                   importedModules.OrderBy(m => m.FileName).ToArray(),
+                                   dotnetModules.OrderBy(m => m.FileName).ToArray(),
                                    customData);
     }
 
@@ -106,7 +183,7 @@ public record ExecutableInput(WindowsModuleMetadata ExecutableMetadata,
 
     public IEnumerable<ExportedFunctionsMetadata> GetExportedFunctions() => ExportedFunctions;
 
-    public IEnumerable<WindowsModuleMetadata> GetModules() => ImportedModules;
+    public IEnumerable<WindowsModuleMetadata> GetModules() => ImportedModules.Union(DotNetModules);
 
     public IEnumerable<object> GetCustomData(string key) => CustomData.TryGetValue(key, out var values) ? values : Enumerable.Empty<object>();
 }
